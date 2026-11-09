@@ -1,14 +1,8 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { loadThemePreference, saveThemePreference } from './storage';
 import { ThemeContext, type ThemeContextValue } from './ThemeContext';
-import {
-  applyTheme,
-  loadThemePreference,
-  resolveTheme,
-  saveThemePreference,
-  subscribeToSystemTheme,
-  systemPrefersDark,
-  type ThemePreference,
-} from './theme';
+import { resolveTheme, type ThemePreference } from './theme';
+import { applyTheme, subscribeToSystemTheme, systemPrefersDark } from './themeDom';
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [preference, setPreferenceState] = useState<ThemePreference>(loadThemePreference);
