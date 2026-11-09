@@ -40,6 +40,8 @@
 
   --star: #a0521a;
   --star-empty: #d6cbb8;
+
+  --danger: #a3341f;
 }
 
 /* Dark tokens: duplicated for the system setting and for the manual override. */
@@ -72,6 +74,8 @@
 
     --star: #f2b66d;
     --star-empty: #4a4a4a;
+
+    --danger: #f28b7d;
   }
 }
 
@@ -103,6 +107,8 @@
 
   --star: #f2b66d;
   --star-empty: #4a4a4a;
+
+  --danger: #f28b7d;
 }
 
 @theme inline {
@@ -126,6 +132,7 @@
   --color-banner-border: var(--banner-border);
   --color-star: var(--star);
   --color-star-empty: var(--star-empty);
+  --color-danger: var(--danger);
 
   --font-serif: 'Merriweather', Georgia, serif;
   --font-sans: 'Lato', system-ui, sans-serif;
