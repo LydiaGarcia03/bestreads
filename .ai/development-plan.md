@@ -29,9 +29,10 @@ Goal: an empty but deployable app with login, search, theming, i18n and the resp
 - [ ] Feature-based folder structure under `src/features/`
 
 ### 1.2 Design system
-- [ ] Tailwind with theme tokens as CSS variables (light "Classic Library" and dark gray/amber)
-- [ ] Merriweather (headings) and Lato (body)
-- [ ] Theme follows system setting, with manual override stored in preferences
+- [x] Tailwind with theme tokens as CSS variables (light "Classic Library" and dark gray/amber)
+- [x] Merriweather (headings) and Lato (body) via `@fontsource`, latin subset only
+- [x] Theme follows system setting, with manual override stored in localStorage (Firestore sync in 1.5)
+- [ ] Theme toggle UI (settings screen, 1.4)
 
 ### 1.3 i18n
 - [ ] `react-i18next` with `en` (default) and `pt-BR`
@@ -47,6 +48,7 @@ Goal: an empty but deployable app with login, search, theming, i18n and the resp
 - [ ] Firebase app init from env vars
 - [ ] Login with Google (popup, `signInWithRedirect` fallback on mobile) and email/password (sign up, sign in, password reset)
 - [ ] Auth guard for private routes; create `users/{uid}` on first login
+- [ ] Sync theme and language preferences between localStorage and `users/{uid}`
 - [ ] Initial `firestore.rules` covering `users/{uid}`
 
 ### 1.6 Book search

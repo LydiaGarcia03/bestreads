@@ -1,1 +1,153 @@
 @import 'tailwindcss';
+
+/* Latin subset only: covers English and Brazilian Portuguese (accents, ç, ã). */
+@import '@fontsource/lato/latin-400.css';
+@import '@fontsource/lato/latin-700.css';
+@import '@fontsource/merriweather/latin-400.css';
+@import '@fontsource/merriweather/latin-700.css';
+
+/*
+ * Design tokens. Components only use these (e.g. `bg-surface`, `text-fg-muted`),
+ * never raw hex values, so light and dark themes stay in sync.
+ * Theme selection: `<html data-theme="light|dark">` forces a theme; without it the
+ * system setting (`prefers-color-scheme`) decides.
+ */
+:root {
+  color-scheme: light;
+
+  --bg: #f4f1ea;
+  --surface: #ffffff;
+  --surface-nav: #ffffff;
+  --surface-muted: #eae3d6;
+  --border: #ddd5c7;
+  --border-strong: #c9beab;
+  --dot: #a99c88;
+
+  --fg: #382110;
+  --fg-muted: #6b5b4e;
+
+  --accent: #2f6b4f;
+  --accent-hover: #1f4a36;
+  --on-accent: #ffffff;
+
+  --chip-active: #382110;
+  --on-chip-active: #ffffff;
+
+  --banner: #382110;
+  --on-banner: #f4f1ea;
+  --banner-icon: #f2b66d;
+  --banner-border: #382110;
+
+  --star: #a0521a;
+  --star-empty: #d6cbb8;
+}
+
+/* Dark tokens: duplicated for the system setting and for the manual override. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+
+    --bg: #141414;
+    --surface: #1f1f1f;
+    --surface-nav: #191919;
+    --surface-muted: #2e2e2e;
+    --border: #2e2e2e;
+    --border-strong: #3d3d3d;
+    --dot: #707070;
+
+    --fg: #ede6da;
+    --fg-muted: #ababab;
+
+    --accent: #f2b66d;
+    --accent-hover: #f7cd96;
+    --on-accent: #141414;
+
+    --chip-active: #f2b66d;
+    --on-chip-active: #141414;
+
+    --banner: #2a2418;
+    --on-banner: #f2b66d;
+    --banner-icon: #f2b66d;
+    --banner-border: #3a3220;
+
+    --star: #f2b66d;
+    --star-empty: #4a4a4a;
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --bg: #141414;
+  --surface: #1f1f1f;
+  --surface-nav: #191919;
+  --surface-muted: #2e2e2e;
+  --border: #2e2e2e;
+  --border-strong: #3d3d3d;
+  --dot: #707070;
+
+  --fg: #ede6da;
+  --fg-muted: #ababab;
+
+  --accent: #f2b66d;
+  --accent-hover: #f7cd96;
+  --on-accent: #141414;
+
+  --chip-active: #f2b66d;
+  --on-chip-active: #141414;
+
+  --banner: #2a2418;
+  --on-banner: #f2b66d;
+  --banner-icon: #f2b66d;
+  --banner-border: #3a3220;
+
+  --star: #f2b66d;
+  --star-empty: #4a4a4a;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-nav: var(--surface-nav);
+  --color-surface-muted: var(--surface-muted);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-dot: var(--dot);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-on-accent: var(--on-accent);
+  --color-chip-active: var(--chip-active);
+  --color-on-chip-active: var(--on-chip-active);
+  --color-banner: var(--banner);
+  --color-on-banner: var(--on-banner);
+  --color-banner-icon: var(--banner-icon);
+  --color-banner-border: var(--banner-border);
+  --color-star: var(--star);
+  --color-star-empty: var(--star-empty);
+
+  --font-serif: 'Merriweather', Georgia, serif;
+  --font-sans: 'Lato', system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    background-color: var(--bg);
+  }
+
+  body {
+    @apply bg-bg font-sans text-fg antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-serif;
+  }
+
+  a {
+    @apply text-accent hover:text-accent-hover;
+  }
+}
