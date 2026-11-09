@@ -1,0 +1,60 @@
+rules_version = '2';
+
+// Default: everything is denied. Each collection opens only what the app needs.
+// Limits mirror the app: DISPLAY_NAME_MAX_LENGTH (src/features/auth/credentials.ts)
+// and PHOTO_URL_MAX_LENGTH (src/features/account/userDocument.ts).
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    // Admins are marked by an admins/{uid} document created by hand in the Firebase console.
+    // For moderation of public data only (Phase 6+); never grants access to users/{uid}/...
+    function isAdmin() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    function isNullableString(value, maxLength) {
+      return value == null || (value is string && value.size() <= maxLength);
+    }
+
+    function isValidPreferences(preferences) {
+      return preferences is map
+        && preferences.keys().hasOnly(['theme', 'language'])
+        && preferences.keys().hasAll(['theme', 'language'])
+        && preferences.theme in ['system', 'light', 'dark']
+        && preferences.language in ['en', 'pt-BR'];
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasOnly(['displayName', 'photoURL', 'preferences', 'createdAt'])
+        && data.keys().hasAll(['displayName', 'photoURL', 'preferences', 'createdAt'])
+        && isNullableString(data.displayName, 100)
+        && isNullableString(data.photoURL, 2048)
+        && isValidPreferences(data.preferences)
+        && data.createdAt is timestamp;
+    }
+
+    // users/{uid}: profile and preferences, owner only.
+    match /users/{uid} {
+      allow read: if isOwner(uid);
+      allow create: if isOwner(uid)
+        && isValidUser(request.resource.data)
+        && request.resource.data.createdAt == request.time;
+      allow update: if isOwner(uid)
+        && isValidUser(request.resource.data)
+        && request.resource.data.createdAt == resource.data.createdAt;
+      // Account deletion is not supported yet.
+      allow delete: if false;
+    }
+
+    // admins/{uid}: a user can check whether they are an admin; nobody can write from the app.
+    match /admins/{uid} {
+      allow read: if isOwner(uid);
+      allow write: if false;
+    }
+  }
+}
