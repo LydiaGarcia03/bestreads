@@ -5,7 +5,7 @@ Each phase lists its tasks and a "Done when" checklist. Mark tasks with `[x]` as
 
 Status legend: `[ ]` not started · `[~]` in progress · `[x]` done
 
-Current phase: **Phase 1 — Base**
+Current phase: **Phase 1 — Base** (in progress)
 
 ---
 
@@ -22,10 +22,10 @@ Current phase: **Phase 1 — Base**
 Goal: an empty but deployable app with login, search, theming, i18n and the responsive shell.
 
 ### 1.1 Scaffolding and tooling
-- [ ] Vite + React + TypeScript (strict) project
-- [ ] ESLint, `typecheck` script (`tsc --noEmit`), Vitest + React Testing Library
+- [x] Vite + React + TypeScript (strict) project
+- [x] ESLint, `typecheck` script (`tsc -b`, all tsconfigs use `noEmit`), Vitest + React Testing Library
 - [x] `.gitignore` (including `.env*` except `.env.example`, `.idea/`, `dist/`) and `.gitattributes` (LF line endings)
-- [ ] `.env.example` with all `VITE_FIREBASE_*` keys
+- [x] `.env.example` with all `VITE_FIREBASE_*` keys
 - [ ] Feature-based folder structure under `src/features/`
 
 ### 1.2 Design system
