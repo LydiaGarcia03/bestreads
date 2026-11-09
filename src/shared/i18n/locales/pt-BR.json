@@ -1,0 +1,113 @@
+{
+  "app": {
+    "name": "Bestreads",
+    "tagline": "Seu diário de leitura privado"
+  },
+  "common": {
+    "loading": "Carregando…",
+    "comingSoon": "Em breve"
+  },
+  "a11y": {
+    "skipToContent": "Pular para o conteúdo"
+  },
+  "header": {
+    "home": "Página inicial do Bestreads",
+    "profileAndSettings": "Perfil e configurações"
+  },
+  "nav": {
+    "main": "Principal",
+    "home": "Início",
+    "shelves": "Estantes",
+    "friends": "Amigos",
+    "year": "Meu Ano"
+  },
+  "search": {
+    "label": "Buscar livros",
+    "placeholder": "Busque por título, autor ou ISBN",
+    "shortcutHint": "Pressione / para buscar",
+    "title": "Busca",
+    "resultsFor": "Resultados para “{{query}}”",
+    "empty": "Digite um título, autor ou ISBN na barra de busca.",
+    "tooShort": "Digite pelo menos {{min}} caracteres.",
+    "searching": "Buscando…",
+    "noResults": "Nenhum livro encontrado. Tente outro título, autor ou ISBN.",
+    "error": "A busca não está disponível agora. Verifique sua conexão e tente de novo.",
+    "retry": "Tentar de novo",
+    "pageCount_one": "{{count}} página",
+    "pageCount_other": "{{count}} páginas"
+  },
+  "books": {
+    "coverAlt": "Capa de {{title}}",
+    "noCover": "Sem capa para {{title}}"
+  },
+  "pages": {
+    "home": { "title": "Início" },
+    "shelves": { "title": "Estantes" },
+    "friends": { "title": "Amigos" },
+    "year": { "title": "Meu Ano" },
+    "book": { "title": "Livro" },
+    "settings": { "title": "Configurações" },
+    "notFound": {
+      "title": "Página não encontrada",
+      "description": "Esta página não existe ou foi movida.",
+      "backHome": "Ir para o Início"
+    }
+  },
+  "settings": {
+    "appearance": "Aparência",
+    "theme": {
+      "label": "Tema",
+      "system": "Sistema",
+      "light": "Claro",
+      "dark": "Escuro"
+    },
+    "languageSection": "Idioma",
+    "account": "Conta"
+  },
+  "auth": {
+    "intro": "Tudo o que você registra é privado. Só as notas que você escolher compartilhar ficam públicas.",
+    "signInTitle": "Entrar",
+    "signUpTitle": "Crie sua conta",
+    "resetTitle": "Redefinir senha",
+    "resetIntro": "Informe o e-mail da sua conta e enviaremos um link para você escolher uma nova senha.",
+    "continueWithGoogle": "Continuar com Google",
+    "orWithEmail": "ou com e-mail",
+    "name": "Nome",
+    "email": "E-mail",
+    "password": "Senha",
+    "passwordHint": "Pelo menos {{min}} caracteres",
+    "signIn": "Entrar",
+    "signUp": "Criar conta",
+    "forgotPassword": "Esqueceu a senha?",
+    "sendResetLink": "Enviar link",
+    "resetSent": "Se existir uma conta para {{email}}, um link para redefinir a senha está a caminho. Confira a caixa de entrada e o spam.",
+    "noAccount": "Novo no Bestreads?",
+    "createAccount": "Crie uma conta",
+    "haveAccount": "Já tem uma conta?",
+    "backToSignIn": "Voltar para o login",
+    "signOut": "Sair",
+    "unavailable": {
+      "title": "Não foi possível conectar agora",
+      "description": "Verifique sua conexão com a internet e recarregue a página.",
+      "reload": "Recarregar"
+    },
+    "errors": {
+      "invalidCredentials": "E-mail ou senha incorretos.",
+      "emailInUse": "Já existe uma conta com este e-mail. Entre com ela.",
+      "weakPassword": "Escolha uma senha mais forte.",
+      "invalidEmail": "Informe um e-mail válido.",
+      "tooManyRequests": "Muitas tentativas. Aguarde um pouco e tente de novo.",
+      "network": "Sem conexão. Verifique sua internet e tente de novo.",
+      "popupBlocked": "A janela de login foi bloqueada. Permita pop-ups para este site e tente de novo.",
+      "accountDisabled": "Esta conta foi desativada.",
+      "unknown": "Algo deu errado. Tente de novo."
+    }
+  },
+  "language": {
+    "label": "Idioma",
+    "options": {
+      "en": "EN",
+      "pt-BR": "PT-BR"
+    }
+  }
+}

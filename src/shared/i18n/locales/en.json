@@ -1,0 +1,113 @@
+{
+  "app": {
+    "name": "Bestreads",
+    "tagline": "Your private reading journal"
+  },
+  "common": {
+    "loading": "Loading…",
+    "comingSoon": "Coming soon"
+  },
+  "a11y": {
+    "skipToContent": "Skip to content"
+  },
+  "header": {
+    "home": "Bestreads home",
+    "profileAndSettings": "Profile and settings"
+  },
+  "nav": {
+    "main": "Main",
+    "home": "Home",
+    "shelves": "Shelves",
+    "friends": "Friends",
+    "year": "My Year"
+  },
+  "search": {
+    "label": "Search books",
+    "placeholder": "Search title, author or ISBN",
+    "shortcutHint": "Press / to search",
+    "title": "Search",
+    "resultsFor": "Results for “{{query}}”",
+    "empty": "Type a title, author or ISBN in the search bar.",
+    "tooShort": "Type at least {{min}} characters.",
+    "searching": "Searching…",
+    "noResults": "No books found. Try another title, author or ISBN.",
+    "error": "Search isn't available right now. Check your connection and try again.",
+    "retry": "Try again",
+    "pageCount_one": "{{count}} page",
+    "pageCount_other": "{{count}} pages"
+  },
+  "books": {
+    "coverAlt": "Cover of {{title}}",
+    "noCover": "No cover for {{title}}"
+  },
+  "pages": {
+    "home": { "title": "Home" },
+    "shelves": { "title": "Shelves" },
+    "friends": { "title": "Friends" },
+    "year": { "title": "My Year" },
+    "book": { "title": "Book" },
+    "settings": { "title": "Settings" },
+    "notFound": {
+      "title": "Page not found",
+      "description": "This page doesn't exist or was moved.",
+      "backHome": "Go to Home"
+    }
+  },
+  "settings": {
+    "appearance": "Appearance",
+    "theme": {
+      "label": "Theme",
+      "system": "System",
+      "light": "Light",
+      "dark": "Dark"
+    },
+    "languageSection": "Language",
+    "account": "Account"
+  },
+  "auth": {
+    "intro": "Everything you record stays private. Only the ratings you choose to share are public.",
+    "signInTitle": "Sign in",
+    "signUpTitle": "Create your account",
+    "resetTitle": "Reset your password",
+    "resetIntro": "Enter your account email and we'll send you a link to choose a new password.",
+    "continueWithGoogle": "Continue with Google",
+    "orWithEmail": "or with email",
+    "name": "Name",
+    "email": "Email",
+    "password": "Password",
+    "passwordHint": "At least {{min}} characters",
+    "signIn": "Sign in",
+    "signUp": "Create account",
+    "forgotPassword": "Forgot password?",
+    "sendResetLink": "Send reset link",
+    "resetSent": "If an account exists for {{email}}, a link to reset the password is on its way. Check your inbox and spam folder.",
+    "noAccount": "New to Bestreads?",
+    "createAccount": "Create an account",
+    "haveAccount": "Already have an account?",
+    "backToSignIn": "Back to sign in",
+    "signOut": "Sign out",
+    "unavailable": {
+      "title": "Can't connect right now",
+      "description": "Check your internet connection and reload the page.",
+      "reload": "Reload"
+    },
+    "errors": {
+      "invalidCredentials": "Wrong email or password.",
+      "emailInUse": "There's already an account with this email. Sign in instead.",
+      "weakPassword": "Choose a stronger password.",
+      "invalidEmail": "Enter a valid email address.",
+      "tooManyRequests": "Too many attempts. Wait a moment and try again.",
+      "network": "No connection. Check your internet and try again.",
+      "popupBlocked": "The sign-in window was blocked. Allow pop-ups for this site and try again.",
+      "accountDisabled": "This account has been disabled.",
+      "unknown": "Something went wrong. Please try again."
+    }
+  },
+  "language": {
+    "label": "Language",
+    "options": {
+      "en": "EN",
+      "pt-BR": "PT-BR"
+    }
+  }
+}
