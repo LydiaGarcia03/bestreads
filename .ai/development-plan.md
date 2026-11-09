@@ -26,40 +26,48 @@ Goal: an empty but deployable app with login, search, theming, i18n and the resp
 - [x] ESLint, `typecheck` script (`tsc -b`, all tsconfigs use `noEmit`), Vitest + React Testing Library
 - [x] `.gitignore` (including `.env*` except `.env.example`, `.idea/`, `dist/`) and `.gitattributes` (LF line endings)
 - [x] `.env.example` with all `VITE_FIREBASE_*` keys
-- [ ] Feature-based folder structure under `src/features/`
+- [x] Folder structure: `src/app/` (root component, providers), `src/features/<feature>/`, `src/shared/` (i18n, UI), `src/test/` (helpers)
 
 ### 1.2 Design system
 - [x] Tailwind with theme tokens as CSS variables (light "Classic Library" and dark gray/amber)
 - [x] Merriweather (headings) and Lato (body) via `@fontsource`, latin subset only
 - [x] Theme follows system setting, with manual override stored in localStorage (Firestore sync in 1.5)
-- [ ] Theme toggle UI (settings screen, 1.4)
+- [x] Theme toggle UI (settings screen, 1.4)
 
 ### 1.3 i18n
-- [ ] `react-i18next` with `en` (default) and `pt-BR`
-- [ ] Language dropdown (globe + `EN` / `PT-BR`) in the top bar
+- [x] `react-i18next` with `en` (default) and `pt-BR`; typed keys; initial language = saved choice, else browser language
+- [x] Language dropdown component (globe + `EN` / `PT-BR`); placed in the top bar in 1.4
 
 ### 1.4 App shell and routing
-- [ ] `HashRouter` with routes: Home, Search, Book, Shelves, Friends, My Year, Profile, Settings
-- [ ] Mobile: top bar + bottom tab bar (Home, Shelves, Friends, My Year), safe areas
-- [ ] Desktop (`lg`+): top bar with large search + left side menu
-- [ ] `/` keyboard shortcut focuses search
+- [x] `HashRouter` with lazy-loaded routes: Home, Search, Book, Shelves, Friends, My Year, Settings, not found (public profile route moved to Phase 6)
+- [x] Mobile: top bar + bottom tab bar (Home, Shelves, Friends, My Year), safe areas
+- [x] Desktop (`lg`+): top bar with large search + left side menu
+- [x] `/` keyboard shortcut focuses search
+- [x] Settings screen with theme selector (System / Light / Dark) and language
+- [x] Skip-to-content link
 
 ### 1.5 Firebase and auth
-- [ ] Firebase app init from env vars
-- [ ] Login with Google (popup, `signInWithRedirect` fallback on mobile) and email/password (sign up, sign in, password reset)
-- [ ] Auth guard for private routes; create `users/{uid}` on first login
-- [ ] Sync theme and language preferences between localStorage and `users/{uid}`
-- [ ] Initial `firestore.rules` covering `users/{uid}`
+- [x] Firebase project (Spark) with Google and email/password sign-in, Firestore and `.env.local`
+- [x] Firebase app init from env vars; Auth and Firestore SDKs loaded on demand
+- [x] Login with Google (popup, `signInWithRedirect` fallback when the popup is blocked) and email/password (sign up, sign in, password reset)
+- [x] Auth guard for private routes; create `users/{uid}` on first login
+- [x] Sync theme and language preferences between localStorage and `users/{uid}`
+- [x] Initial `firestore.rules` covering `users/{uid}`
+- [x] Publish `firestore.rules` to the Firebase project and check Google and email login end to end in the browser
+- [x] Admin account (created in the Firebase console) marked by `admins/{uid}`
 
 ### 1.6 Book search
-- [ ] Google Books client (title, author, cover, description, pages, ISBN)
-- [ ] Open Library fallback for missing cover/description
-- [ ] Debounced (400 ms) search cached with TanStack Query
-- [ ] Search results screen (mobile list, desktop grid)
+- [x] Google Books client (title, author, cover, description, pages, ISBN); optional `VITE_GOOGLE_BOOKS_API_KEY`
+- [x] Open Library fallback: whole search when Google fails or finds nothing; missing covers by ISBN (description fallback moved to the book page, Phase 2)
+- [x] Debounced (400 ms) search cached with TanStack Query
+- [x] Search results screen (mobile list, desktop grid)
+- [x] Google Books API key `bestreads-books` (project `bestreads-17987`, restricted to the Books API and to `http://localhost:5180/*` and `https://lydiagarcia03.github.io/bestreads/*`) in `.env.local`; repository secret added in 1.7
 
 ### 1.7 Deploy
-- [ ] `vite.config.ts` with `base: '/<repo>/'`
-- [ ] `.github/workflows/deploy.yml` (build + GitHub Pages deploy, secrets as env)
+- [x] `vite.config.ts` with `base: '/bestreads/'` (build only)
+- [x] `.github/workflows/deploy.yml` (lint, typecheck, test, build + GitHub Pages deploy, secrets as env: `VITE_FIREBASE_*` and `VITE_GOOGLE_BOOKS_API_KEY`)
+- [ ] Repository secrets and Pages source "GitHub Actions" set in the GitHub repository settings
+- [ ] First deploy after the end-of-phase commit and push; check `https://lydiagarcia03.github.io/bestreads/`
 
 Done when:
 - [ ] `lint`, `typecheck` and `test` pass
@@ -75,11 +83,12 @@ Goal: the user can track books on shelves with status, rating, progress and date
 - [ ] Fixed statuses: Want to read, Reading, Read
 - [ ] Custom shelves: create, rename, reorder, delete; assign books to many shelves
 - [ ] Shelves screen with filter chips (mobile list, desktop cover grid)
+- [ ] Desktop side menu: "My shelves" list with counts and "+ New shelf" below the main tabs
 - [ ] Rating component: tap star for whole value, −/+ stepper by 0.25, clipped partial star fill
 - [ ] Rating public/private toggle; publish/unpublish slim copy to `public/{uid}/ratings/{bookId}`
 - [ ] Reading progress by pages or percentage ("Update progress")
 - [ ] Reads: start/finish dates, re-reads supported
-- [ ] Book page (mobile and desktop layouts from mocks)
+- [ ] Book page (mobile and desktop layouts from mocks); fetch the single volume/work by `bookId`, with the Open Library work description as fallback
 - [ ] Home: "Currently reading" card and shelves
 - [ ] `firestore.rules` for books, shelves and public ratings (rating validation)
 
@@ -128,11 +137,12 @@ Only for books with status "Reading"; opt-in via "Add reading plan".
 ## Phase 6 — Social
 
 - [ ] Unique `@username` via `usernames/{username}` (create once)
-- [ ] `public/{uid}` profile (display name, username, photo)
+- [ ] `public/{uid}` profile (display name, username, photo) and public profile route
 - [ ] Follow / unfollow (`follows/{followerUid}_{followedUid}`)
 - [ ] Friends screen and public profile with public ratings
 - [ ] Feed of followed users' public ratings
 - [ ] `firestore.rules` for usernames, public profile and follows
+- [ ] Admin moderation of public data (usernames, public profiles, public ratings) using `isAdmin()` from `firestore.rules`; admins never get access to `users/{uid}/...`
 
 ---
 
@@ -146,7 +156,7 @@ Only for books with status "Reading"; opt-in via "Add reading plan".
 
 ## Phase 8 — PWA and polish
 
-- [ ] `vite-plugin-pwa`: manifest (192/512 + maskable icons, theme color, standalone)
+- [ ] `vite-plugin-pwa`: manifest (192/512 + maskable icons generated from `public/favicon.svg`, theme color, standalone)
 - [ ] Service worker caching app shell and covers; offline fallback page
 - [ ] "Install app" prompt on desktop and mobile
 - [ ] Accessibility pass (labels, alt text, keyboard navigation, touch targets ≥ 44px)
@@ -157,4 +167,7 @@ Only for books with status "Reading"; opt-in via "Add reading plan".
 ## Open questions
 
 - Reminder delivery for reading plans without a backend (Phase 5).
-- Firestore emulator / `@firebase/rules-unit-testing` as dev dependencies for rules tests (Phase 3).
+- Firestore emulator / `@firebase/rules-unit-testing` as dev dependencies for rules tests (Phase 3). Until then, `firestore.rules` for `users/{uid}` has no automated tests.
+- `signInWithRedirect` on a domain other than `<project>.firebaseapp.com` (GitHub Pages) is affected by browser third-party storage partitioning; the redirect fallback may need an auth-domain proxy or may be dropped. Popup login is the primary flow.
+- Search relevance: Open Library (and sometimes Google) returns summaries and study guides for popular titles. Possible later improvement: rank exact title/author matches and results with covers first.
+- Firestore bundle size: the full SDK chunk is ≈138 KB gzip (loaded after login). `firebase/firestore/lite` is much smaller but has no offline cache or listeners; decide before Phase 2 data access grows.

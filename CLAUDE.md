@@ -27,16 +27,17 @@ Core features:
 ### Language
 - **All communication with the user must be in Brazilian Portuguese (PT-BR):** explanations, questions, summaries, plans, review notes.
 - **All code and app content must be in English:** identifiers, comments, commit messages, PR titles and descriptions, branch names, file names, UI strings, docs inside the repo.
-- The app UI supports exactly two languages: English (`en`, default) and Brazilian Portuguese (`pt-BR`). A small language dropdown (globe icon + `EN` / `PT-BR`) sits in the top bar on mobile and desktop; the choice is saved in the user's preferences. Every user-facing string goes through i18n (`react-i18next`); never hardcode UI text in components. Add the key to `en` first, then `pt-BR`.
+- The app UI supports exactly two languages: English (`en`, default) and Brazilian Portuguese (`pt-BR`). A small language dropdown (globe icon + `EN` / `PT-BR`) sits in the top bar on mobile and desktop; the choice is saved in the user's preferences. Every user-facing string goes through i18n (`react-i18next`); never hardcode UI text in components. Add the key to `en` first, then `pt-BR`. Translations live in `src/shared/i18n/locales/{en,pt-BR}.json`. Keys are type-checked against `en.json`, and a test fails if the two files don't have the same keys.
 
 ### Git and authorship
 - **Never add Claude as author or co-author of a commit.** No `Co-Authored-By: Claude ...` trailer, no "Generated with Claude Code" line, no AI attribution in commit messages, PR descriptions, or code comments.
 - Never change git `user.name` / `user.email`.
-- Never push, force-push, rebase shared branches, or delete branches without asking the user first.
+- **Never commit or push unless the user explicitly asks for it.** Leave changes in the working tree and report them. Permission for one commit or push doesn't carry over to later ones.
+- Never force-push, rebase shared branches, or delete branches without asking the user first.
 - Commit messages follow Conventional Commits in English: `type(scope): description`.
   - Use a colon after the scope, never a dash.
   - Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`.
-  - Scopes: `auth`, `search`, `books`, `shelves`, `rating`, `progress`, `review`, `cover`, `series`, `plan`, `social`, `share`, `year`, `pwa`, `i18n`, `theme`, `layout`, `rules`, `deploy`, `deps`, `ai`. Add a new scope to this list when a new area appears.
+  - Scopes: `auth`, `account`, `search`, `books`, `shelves`, `rating`, `progress`, `review`, `cover`, `series`, `plan`, `social`, `share`, `year`, `pwa`, `i18n`, `theme`, `layout`, `rules`, `deploy`, `deps`, `ai`. Add a new scope to this list when a new area appears.
   - Description: imperative mood, lowercase, no trailing period, header ≤ 72 characters.
   - Optional body explains why. Breaking changes use `!` after the scope (`feat(rules)!: ...`) or a `BREAKING CHANGE:` footer.
   - Examples: `feat(rating): add 0.25 stepper with partial star fill`, `fix(auth): fall back to redirect login on mobile`, `docs(ai): add change log and development plan`.
@@ -54,6 +55,7 @@ Core features:
 - Personal covers are resized in the browser (~400px wide, WebP/JPEG, max ~150 KB) and stored as base64 in `users/{uid}/books/{bookId}/private/cover`. Never store images in the main book document (1 MB document limit).
 - Never commit secrets. Firebase web config comes from `VITE_FIREBASE_*` env vars (`.env.local` locally, repository secrets in CI). Never commit `.env*` files except `.env.example`.
 - Never put tokens that must stay private (e.g. a Hardcover API token) in frontend code.
+- The optional Google Books key (`VITE_GOOGLE_BOOKS_API_KEY`) is a browser key: it ships in the bundle, so it must be restricted to the app's HTTP referrers and to the Books API in the Google Cloud console.
 
 ### AI workspace (`.ai/`)
 - **Change log:** update `.ai/change-log.md` after every change made to the repository (code, config, docs). Add entries under today's date, newest first, one bullet per change with the type and affected paths.
@@ -88,11 +90,12 @@ Core features:
 
 | Path | Content | Read | Write |
 | --- | --- | --- | --- |
-| `users/{uid}` | display name, photo, username, preferences | owner | owner |
+| `users/{uid}` | display name, photo, preferences (`theme`, `language`), `createdAt`; username from Phase 6 | owner | owner |
 | `users/{uid}/books/{bookId}` | title, author, API cover, pages, ISBN, description, status, shelves, rating, progress, series + volume, reads (start/finish) | owner | owner |
 | `users/{uid}/books/{bookId}/private/review` | review text | owner | owner |
 | `users/{uid}/books/{bookId}/private/cover` | personal cover (base64) | owner | owner |
 | `users/{uid}/shelves/{shelfId}` | custom shelf name and order | owner | owner |
+| `admins/{uid}` | admin marker (`createdAt`), created only in the Firebase console | owner | nobody (console only) |
 | `usernames/{username}` | owning `uid` (enforces unique usernames) | signed in | owner, create once |
 | `public/{uid}` | display name, username, photo | signed in | owner |
 | `public/{uid}/ratings/{bookId}` | title, author, API cover, rating, date | signed in | owner |
@@ -101,6 +104,54 @@ Core features:
 `bookId` = Google Books volume id, or `ol-<id>` for Open Library, so the same book is never added twice.
 
 `rating` is a number from 0.25 to 5 in 0.25 steps (or `null` when unrated). Validate it in the app and in `firestore.rules` (`rating * 4 == math.floor(rating * 4)` and `0 < rating <= 5`).
+
+## Architecture and code quality
+
+### Architecture
+- Layered, with dependencies pointing inward:
+  1. **UI** (`components/`, screens): rendering and user events only.
+  2. **Hooks**: state and orchestration (TanStack Query, context).
+  3. **Data access** (`api.ts`, providers): the only place that talks to Firebase, `fetch` or `localStorage`.
+  4. **Domain** (plain TypeScript): pure logic with no React or I/O, such as rating math, progress, reading plan estimates and API response mappers.
+- Components never import the Firebase SDK, call `fetch` or touch storage directly.
+- External services sit behind small interfaces, so they can be swapped and mocked. For example, a `BookSearchProvider` is implemented by Google Books and by Open Library.
+- Firebase-backed implementations are loaded with dynamic `import()` and injected through `AppProviders` (`src/app/services.ts`); tests pass the fakes from `src/test/fakes.ts`. Only those lazily loaded modules import `src/shared/firebase/app.ts`.
+- Features import each other only through the feature's public `index.ts`. Page components are the exception: they are not exported from the index, and `src/app/AppRoutes.tsx` lazy-loads each one from its own module so it gets its own chunk. Shared, feature-agnostic code lives in `src/shared/` (UI primitives, utils).
+
+### SOLID and clean code
+- **Single responsibility:** one reason to change per module, component and hook. Split a component when it mixes data fetching, state and layout.
+- **Open/closed:** extend through composition (props, children, new providers), not boolean flags that branch behavior.
+- **Liskov and interface segregation:** keep interfaces and props small and focused. Any implementation of an interface must be usable wherever that interface is expected.
+- **Dependency inversion:** high-level code depends on interfaces, and concrete implementations are injected (props, context, module boundary).
+- Use descriptive names, small functions and early returns.
+- Use named constants instead of magic numbers.
+- Don't leave dead or commented-out code. Comments explain *why*, not *what*.
+- No premature abstraction. Extract shared code once a second real use exists.
+- Handle errors at boundaries (data-access layer, error boundaries). Show user-facing error messages through i18n. Never swallow an error silently unless a comment explains why.
+
+### Performance
+- Split code per route with `React.lazy`, and load heavy libraries on demand (e.g. `html-to-image` only when sharing).
+- Import only the modular Firebase SDK functions in use.
+- Budget: initial JS ≤ 250 KB gzip. Check the `npm run build` output whenever a dependency or a new route is added, and report the size change.
+- Avoid needless re-renders:
+  - Memoize context values.
+  - Split contexts that change at different rates.
+  - Use `memo`/`useMemo`/`useCallback` only where it prevents measurable work.
+- Minimize Firestore reads:
+  - Limit and paginate queries.
+  - Don't attach listeners to large collections.
+  - Set a sensible `staleTime` in TanStack Query.
+- Covers use `loading="lazy"`, fixed dimensions or `aspect-ratio` (no layout shift) and the smallest available size.
+
+### Testing
+- **Unit tests** (Vitest): every domain function and every hook with logic, including edge cases (bounds, empty, invalid input).
+- **Integration tests** (React Testing Library):
+  - Every screen and every interactive component.
+  - Rendered with the real providers (i18n, theme, router, query client) via the helpers in `src/test/`, with the data-access layer mocked at its boundary (`api.ts` or provider interface).
+  - Query by role and label, as the user would.
+- **Firestore rules tests** with the emulator for every rule (from Phase 3).
+- A feature isn't done without its tests, and every bug fix includes a regression test.
+- Tests are colocated as `*.test.ts(x)` next to the code they cover.
 
 ## Conventions
 
@@ -125,6 +176,7 @@ The app is a single responsive web app that works equally well on desktop (PC) a
 
 ## Design direction
 
+- Logo: the "shelf" mark in `public/favicon.svg` (three book spines on a shelf, one leaning, on dark brown). It is the source for favicon and PWA icons; don't replace it without asking the user. The in-app wordmark is the text "best**reads**" with "reads" in the accent color.
 - Base look: "Classic Library" — cream background `#F4F1EA`, dark brown text `#382110`, green accent `#2F6B4F`, Merriweather for headings, Lato for body.
 - Dark theme: neutral dark gray palette (no blue or purple tint) — background `#141414`, surfaces `#1F1F1F`, borders `#2E2E2E`, text `#EDE6DA`, muted text `#ABABAB`, amber accent `#F2B66D`. Follows the system setting by default, with a manual toggle in settings.
 - Colors and fonts come from Tailwind theme tokens (CSS variables), never hardcoded hex values in components, so both themes stay in sync.
@@ -152,7 +204,7 @@ Rules for using the mocks:
 ## Deploy
 
 - `vite.config.ts` uses `base: '/<repo>/'`.
-- `.github/workflows/deploy.yml`: `npm ci` → `npm run build` → `actions/upload-pages-artifact` (`dist`) → `actions/deploy-pages`.
+- `.github/workflows/deploy.yml`: `npm ci` → lint, typecheck, test → `npm run build` (repository secrets `VITE_FIREBASE_*` and `VITE_GOOGLE_BOOKS_API_KEY` as env) → `actions/upload-pages-artifact` (`dist`) → `actions/deploy-pages`. A failing check blocks the deploy.
 - Firebase Auth must list `<user>.github.io` under Authorized domains.
 - If the Google popup login fails on mobile, use `signInWithRedirect`.
 
@@ -160,7 +212,7 @@ Rules for using the mocks:
 
 ```bash
 npm install        # install dependencies
-npm run dev        # local dev server
+npm run dev        # local dev server on http://localhost:5180/ (preview: 4180)
 npm run build      # production build to dist/
 npm run lint       # ESLint
 npm run typecheck  # tsc --noEmit
