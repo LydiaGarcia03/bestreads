@@ -13,6 +13,8 @@ Format:
 ---
 
 ## 2026-11-09
+- build: added `.gitattributes` (LF line endings for all text files, CRLF for `.bat`/`.cmd`/`.ps1`, image and font files marked binary) and renormalized tracked files.
+- build: added `.gitignore` (node_modules, build output, `.env*` except `.env.example`, coverage, Firebase logs, editor/OS files including `.idea/`).
 - docs(ai): defined commit message format in `CLAUDE.md` (Git and authorship) — `type(scope): description`, list of types and project scopes, description rules, breaking change notation and examples. Change log entry format updated to include the scope.
 - docs: created `.ai/` folder.
 - docs: created `.ai/change-log.md` (this file).

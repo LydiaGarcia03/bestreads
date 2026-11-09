@@ -24,7 +24,7 @@ Goal: an empty but deployable app with login, search, theming, i18n and the resp
 ### 1.1 Scaffolding and tooling
 - [ ] Vite + React + TypeScript (strict) project
 - [ ] ESLint, `typecheck` script (`tsc --noEmit`), Vitest + React Testing Library
-- [ ] `.gitignore` (including `.env*` except `.env.example`, `.idea/`, `dist/`)
+- [x] `.gitignore` (including `.env*` except `.env.example`, `.idea/`, `dist/`) and `.gitattributes` (LF line endings)
 - [ ] `.env.example` with all `VITE_FIREBASE_*` keys
 - [ ] Feature-based folder structure under `src/features/`
 
