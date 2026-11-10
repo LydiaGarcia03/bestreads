@@ -80,16 +80,35 @@ service cloud.firestore {
             || (series.volume is number && series.volume >= 0 && series.volume <= 1000)));
     }
 
+    // A reading plan (src/features/books/readingPlan.ts, PLAN_LIMITS), or null. Weekdays are
+    // Date.getDay() values; a reminder needs a time.
+    function isValidPlan(plan) {
+      return plan == null
+        || (plan is map
+          && plan.keys().hasOnly(['pagesPerDay', 'time', 'weekdays', 'reminder'])
+          && plan.keys().hasAll(['pagesPerDay', 'time', 'weekdays', 'reminder'])
+          && plan.pagesPerDay is int && plan.pagesPerDay >= 1 && plan.pagesPerDay <= 1000
+          && (plan.time == null
+            || (plan.time is string && plan.time.matches('^([01][0-9]|2[0-3]):[0-5][0-9]$')))
+          && plan.weekdays is list && plan.weekdays.size() >= 1
+          && plan.weekdays.hasOnly([0, 1, 2, 3, 4, 5, 6])
+          && plan.weekdays.toSet().size() == plan.weekdays.size()
+          && plan.reminder is bool
+          && (plan.reminder == false || plan.time != null));
+    }
+
     function isValidBook(data) {
       let fields = ['title', 'subtitle', 'authors', 'coverUrl', 'description', 'pageCount', 'isbn',
         'publishedYear', 'source', 'status', 'shelfIds', 'rating', 'ratingPublic', 'progress', 'reads',
         'addedAt', 'updatedAt'];
-      // Optional: books saved before personal covers and series existed don't have them.
-      let optional = ['hasPersonalCover', 'series'];
+      // Optional: books saved before personal covers, series and reading plans existed don't have them.
+      let optional = ['hasPersonalCover', 'series', 'plan'];
       return data.keys().hasOnly(fields.concat(optional))
         && data.keys().hasAll(fields)
         && (!('hasPersonalCover' in data) || data.hasPersonalCover is bool)
         && (!('series' in data) || isValidSeries(data.series))
+        // A plan only while the book is being read.
+        && (!('plan' in data) || (isValidPlan(data.plan) && (data.plan == null || data.status == 'reading')))
         && data.title is string && data.title.size() > 0 && data.title.size() <= 300
         && isNullableString(data.subtitle, 300)
         && data.authors is list && data.authors.size() <= 20

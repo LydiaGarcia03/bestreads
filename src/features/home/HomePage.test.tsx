@@ -66,6 +66,38 @@ describe('HomePage', () => {
     expect(await screen.findByRole('heading', { name: 'Book screen' })).toBeInTheDocument();
   });
 
+  describe("Tonight's book", () => {
+    const plan = (time: string | null) => ({ pagesPerDay: 30, time, weekdays: [2 as const], reminder: false });
+    beforeEach(() => {
+      // Tuesday, 10 Nov 2026. Only the date is faked, so queries and user events keep their timers.
+      vi.useFakeTimers({ toFake: ['Date'] });
+      vi.setSystemTime(new Date(2026, 10, 10, 12));
+    });
+    afterEach(() => vi.useRealTimers());
+
+    it('shows the book planned for today, linking to it', async () => {
+      renderHome([
+        reading('b1', 'Dune'),
+        reading('b2', 'Circe', { plan: plan('21:00'), progress: { unit: 'pages', value: 486 } }),
+      ]);
+      const link = await within(await currentlyReading()).findByRole('link', {
+        name: "Tonight's book · 9:00 PM · 10 pages planned Circe Edit plan",
+      });
+      expect(link).toHaveAttribute('href', '/book/b2');
+    });
+
+    it('is not shown without a plan for today', async () => {
+      renderHome([reading('b1', 'Dune', { plan: { ...plan(null), weekdays: [3] } })]);
+      await within(await currentlyReading()).findByRole('article', { name: 'Dune' });
+      expect(screen.queryByText(/book ·/)).not.toBeInTheDocument();
+    });
+
+    it('is translated', async () => {
+      renderHome([reading('b1', 'Dune', { plan: plan(null) })], { language: 'pt-BR' });
+      expect(await screen.findByText('Livro de hoje · 30 páginas planejadas')).toBeInTheDocument();
+    });
+  });
+
   it('shows up to three books and links to the rest', async () => {
     renderHome([reading('b1', 'One'), reading('b2', 'Two'), reading('b3', 'Three'), reading('b4', 'Four')]);
     const section = await currentlyReading();

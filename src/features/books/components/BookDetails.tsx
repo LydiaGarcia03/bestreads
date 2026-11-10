@@ -9,6 +9,7 @@ import { LibraryBookCover } from './LibraryBookCover';
 import { LibraryStatus } from './LibraryStatus';
 import { ProgressSection } from './ProgressSection';
 import { RatingEditor } from './RatingEditor';
+import { ReadingPlanSection } from './ReadingPlanSection';
 import { ReadingDates } from './ReadingDates';
 import { ReviewSection } from './ReviewSection';
 import { SeriesEditor } from './SeriesEditor';
@@ -34,7 +35,7 @@ const SECTION = 'border-t border-border pt-5 lg:border-0 lg:pt-0';
  * (cover, status, dates) and the main column (description, progress, rating) are flex columns on
  * desktop (lg) and `display: contents` on mobile, where grid areas order every block:
  * cover beside title and status, then description, progress, rating and dates.
- * Progress shows only while reading; rating and dates only for books in the library.
+ * Progress and the reading plan show only while reading; rating and dates only for books in the library.
  */
 export function BookDetails({ info, libraryBook, catalogBook }: BookDetailsProps) {
   const { t } = useTranslation();
@@ -86,8 +87,9 @@ export function BookDetails({ info, libraryBook, catalogBook }: BookDetailsProps
           </div>
         )}
         {libraryBook?.status === 'reading' && (
-          <div className={`${SECTION} [grid-area:progress]`}>
+          <div className={`${SECTION} flex flex-col gap-5 [grid-area:progress] lg:gap-6`}>
             <ProgressSection book={libraryBook} />
+            <ReadingPlanSection book={libraryBook} />
           </div>
         )}
         {libraryBook && (

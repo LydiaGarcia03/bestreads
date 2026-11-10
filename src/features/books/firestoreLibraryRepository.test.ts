@@ -208,7 +208,7 @@ describe('createFirestoreLibraryRepository', () => {
   });
 
   describe('updateRating', () => {
-    const book = { id: 'vol-1', ...newLibraryBookData(createTestBook(), 'read', TEST_TODAY), addedAt: null, updatedAt: null };
+    const book = { id: 'vol-1', ...newLibraryBookData(createTestBook(), 'read', TEST_TODAY), plan: null, addedAt: null, updatedAt: null };
 
     it('saves a public rating and publishes the slim copy in the same batch', async () => {
       const { batch, operations } = mockBatch();

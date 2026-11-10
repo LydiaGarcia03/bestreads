@@ -120,8 +120,15 @@ describe('readLibraryBook', () => {
       reads: [],
       hasPersonalCover: false,
       series: null,
+      plan: null,
       addedAt: null,
       updatedAt: null,
     });
+  });
+
+  it('keeps a reading plan only while the book is being read', () => {
+    const plan = { pagesPerDay: 20, time: '21:00', weekdays: [1, 3], reminder: true };
+    expect(readLibraryBook('x', { status: 'reading', plan }).plan).toEqual(plan);
+    expect(readLibraryBook('x', { status: 'read', plan }).plan).toBeNull();
   });
 });

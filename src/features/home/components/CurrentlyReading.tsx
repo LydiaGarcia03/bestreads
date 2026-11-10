@@ -5,6 +5,9 @@ import {
   LibraryBookCover,
   buildBookPath,
   buildShelfPath,
+  formatPlanTime,
+  isEveningTime,
+  pickTonightsBook,
   ProgressForm,
   progressPercent,
   useShelfBooks,
@@ -13,12 +16,16 @@ import {
   type ShelfFilter,
 } from '@/features/books/lazy';
 import { Button } from '@/shared/ui/Button';
+import { MoonIcon } from '@/shared/ui/icons';
 
 const READING: ShelfFilter = { kind: 'status', status: 'reading' };
 /** Cards shown on Home; the rest are one tap away on the shelf. */
 const MAX_CARDS = 3;
 
-/** "Currently reading": a card per book being read, with progress and "Update progress". */
+/**
+ * "Currently reading": "Tonight's book" when a reading plan has a session today, then a card per
+ * book being read, with progress and "Update progress".
+ */
 export function CurrentlyReading() {
   const { t } = useTranslation();
   const headingId = useId();
@@ -47,6 +54,8 @@ export function CurrentlyReading() {
         </div>
       )}
 
+      <TonightsBook books={reading} />
+
       {reading.slice(0, MAX_CARDS).map((book) => (
         <ReadingCard key={book.id} book={book} />
       ))}
@@ -57,6 +66,33 @@ export function CurrentlyReading() {
         </Link>
       )}
     </section>
+  );
+}
+
+/** The book planned for today (earliest session), linking to its page; nothing without a plan for today. */
+function TonightsBook({ books }: { books: readonly LibraryBook[] }) {
+  const { t, i18n } = useTranslation();
+  const tonight = pickTonightsBook(books, new Date());
+  if (!tonight) return null;
+  const { book, plan, pages } = tonight;
+  const parts = [
+    isEveningTime(plan.time) ? t('home.tonightsBook') : t('home.todaysBook'),
+    plan.time ? formatPlanTime(plan.time, i18n.resolvedLanguage) : null,
+    t('home.pagesPlanned', { count: pages }),
+  ].filter((part): part is string => part !== null);
+
+  return (
+    <Link
+      to={buildBookPath(book.id)}
+      className="flex min-h-11 items-center gap-2.5 rounded-md border border-banner-border bg-banner px-3.5 py-2 text-xs font-bold text-on-banner hover:text-on-banner lg:px-4.5 lg:text-[13px]"
+    >
+      <MoonIcon size={15} className="shrink-0 text-banner-icon" />
+      <span className="min-w-0 flex-1">
+        {parts.join(' · ')}{' '}
+        <span className="block truncate font-normal opacity-80">{book.title}</span>
+      </span>{' '}
+      <span className="text-banner-icon">{t('plan.edit')}</span>
+    </Link>
   );
 }
 

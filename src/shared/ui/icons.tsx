@@ -170,3 +170,12 @@ export function UserIcon(props: IconProps) {
     </Icon>
   );
 }
+
+/** Moon (reading plan, "Tonight's book"). */
+export function MoonIcon(props: IconProps) {
+  return (
+    <Icon size={18} {...props}>
+      <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" />
+    </Icon>
+  );
+}

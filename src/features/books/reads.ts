@@ -5,7 +5,7 @@
 import type { LibraryBook, LibraryBookState, ReadingStatus, ReadPeriod } from './library';
 
 /** Fields the app changes on a library book outside the rating (which has its own atomic write). */
-export type LibraryBookPatch = Partial<Pick<LibraryBookState, 'status' | 'progress' | 'reads' | 'shelfIds' | 'series'>>;
+export type LibraryBookPatch = Partial<Pick<LibraryBookState, 'status' | 'progress' | 'reads' | 'shelfIds' | 'series' | 'plan'>>;
 
 const pad = (value: number) => String(value).padStart(2, '0');
 
@@ -44,11 +44,19 @@ export function readsAfterStatusChange(reads: readonly ReadPeriod[], status: Rea
   return [...reads];
 }
 
-/** Everything that changes with a new status. A new read (re-read) starts with no progress. */
-export function statusChangePatch(book: Pick<LibraryBook, 'reads' | 'progress'>, status: ReadingStatus, today: string): LibraryBookPatch {
+/**
+ * Everything that changes with a new status. A new read (re-read) starts with no progress, and a
+ * reading plan only exists while reading.
+ */
+export function statusChangePatch(
+  book: Pick<LibraryBook, 'reads' | 'progress' | 'plan'>,
+  status: ReadingStatus,
+  today: string,
+): LibraryBookPatch {
   const reads = readsAfterStatusChange(book.reads, status, today);
   const startsNewRead = status === 'reading' && reads.length > book.reads.length && book.reads.length > 0;
-  return { status, reads, ...(startsNewRead ? { progress: null } : {}) };
+  const dropsPlan = status !== 'reading' && book.plan !== null;
+  return { status, reads, ...(startsNewRead ? { progress: null } : {}), ...(dropsPlan ? { plan: null } : {}) };
 }
 
 /** A read whose finish date is not before its start date. */

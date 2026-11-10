@@ -12,6 +12,8 @@ export { SeriesDot } from './components/SeriesDot';
 export { ProgressForm } from './components/ProgressSection';
 export { useUpdateBook } from './useLibrary';
 export { progressPercent } from './progress';
+export { isEveningTime, pickTonightsBook } from './readingPlan';
+export { formatPlanTime } from './planFormat';
 export { buildShelfPath, parseShelfKey, SHELF_LIMITS, shelfKey, validateShelfName } from './shelves';
 export {
   SHELF_BOOKS_LIMIT,

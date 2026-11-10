@@ -88,7 +88,11 @@
     "seeAllReading_one": "Ver o {{count}} livro que você está lendo",
     "seeAllReading_other": "Ver todos os {{count}} livros que você está lendo",
     "seeShelf_one": "Ver a estante ({{count}} livro)",
-    "seeShelf_other": "Ver a estante inteira ({{count}} livros)"
+    "seeShelf_other": "Ver a estante inteira ({{count}} livros)",
+    "tonightsBook": "Livro de hoje à noite",
+    "todaysBook": "Livro de hoje",
+    "pagesPlanned_one": "{{count}} página planejada",
+    "pagesPlanned_other": "{{count}} páginas planejadas"
   },
   "shelves": {
     "myShelves": "Minhas estantes",
@@ -162,7 +166,44 @@
     "addPastRead": "+ Adicionar leitura anterior",
     "finishBeforeStart": "A data de fim não pode ser antes da data de início."
   },
-  "series": {
+  "plan": {
+    "title": "Plano de leitura",
+    "add": "Adicionar plano de leitura",
+    "addHint": "Páginas por dia, horário e lembrete",
+    "formLabel": "Plano de leitura",
+    "pagesPerDay": "Páginas por dia",
+    "time": "Horário",
+    "timeHint": "opcional",
+    "weekdays": "Dias de leitura",
+    "reminder": "Me lembrar neste horário",
+    "reminderHint": "Adiciona um evento que se repete, com alarme, ao app de calendário (celular ou computador).",
+    "save": "Salvar plano",
+    "cancel": "Cancelar",
+    "edit": "Editar plano",
+    "remove": "Remover",
+    "removeLabel": "Remover o plano de leitura",
+    "tonightAt": "Hoje à noite, às {{time}}",
+    "todayAt": "Hoje às {{time}}",
+    "today": "Hoje",
+    "nextAt": "Próxima: {{day}} às {{time}}",
+    "next": "Próxima: {{day}}",
+    "everyDay": "Todos os dias",
+    "pagesPerDayCount_one": "{{count}} página por dia",
+    "pagesPerDayCount_other": "{{count}} páginas por dia",
+    "finishingAround": "termina por volta de {{date}}",
+    "finishingToday": "termina hoje",
+    "needsPageCount": "a data de término precisa do número de páginas do livro",
+    "estimate": "Nesse ritmo, você termina por volta de {{date}}.",
+    "addToCalendar": "Adicionar lembrete ao calendário",
+    "calendarSummary_one": "Ler {{title}} · {{count}} página",
+    "calendarSummary_other": "Ler {{title}} · {{count}} páginas",
+    "errors": {
+      "invalidPages": "Use um número inteiro de 1 a {{max}}.",
+      "invalidTime": "Use um horário como 21:00.",
+      "noWeekdays": "Escolha pelo menos um dia.",
+      "reminderNeedsTime": "Escolha um horário para o lembrete."
+    }
+  },  "series": {
     "label": "Série",
     "nameAndVolume": "{{name}} · Livro {{volume}}",
     "edit": "Editar",

@@ -75,7 +75,7 @@ describe('readsAfterStatusChange', () => {
 
 describe('statusChangePatch', () => {
   it('clears the progress when a re-read starts', () => {
-    const book = { reads: [done('2026-01-01', '2026-02-01')], progress: { unit: 'pages' as const, value: 300 } };
+    const book = { reads: [done('2026-01-01', '2026-02-01')], progress: { unit: 'pages' as const, value: 300 }, plan: null };
     expect(statusChangePatch(book, 'reading', TODAY)).toEqual({
       status: 'reading',
       reads: [done('2026-01-01', '2026-02-01'), open(TODAY)],
@@ -84,12 +84,19 @@ describe('statusChangePatch', () => {
   });
 
   it('keeps the progress otherwise', () => {
-    const book = { reads: [open('2026-11-01')], progress: { unit: 'pages' as const, value: 300 } };
+    const book = { reads: [open('2026-11-01')], progress: { unit: 'pages' as const, value: 300 }, plan: null };
     expect(statusChangePatch(book, 'read', TODAY)).toEqual({ status: 'read', reads: [done('2026-11-01', TODAY)] });
-    expect(statusChangePatch({ reads: [], progress: null }, 'reading', TODAY)).toEqual({
+    expect(statusChangePatch({ reads: [], progress: null, plan: null }, 'reading', TODAY)).toEqual({
       status: 'reading',
       reads: [open(TODAY)],
     });
+  });
+
+  it('drops the reading plan when the book leaves "Currently reading"', () => {
+    const plan = { pagesPerDay: 20, time: null, weekdays: [1 as const], reminder: false };
+    const book = { reads: [open('2026-11-01')], progress: null, plan };
+    expect(statusChangePatch(book, 'read', TODAY)).toEqual({ status: 'read', reads: [done('2026-11-01', TODAY)], plan: null });
+    expect(statusChangePatch(book, 'reading', TODAY)).not.toHaveProperty('plan');
   });
 });
 

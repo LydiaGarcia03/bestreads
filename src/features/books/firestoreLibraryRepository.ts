@@ -88,7 +88,7 @@ export function createFirestoreLibraryRepository(db: Firestore = getFirestore(ge
         transaction.set(ref, { ...data, addedAt: serverTimestamp(), updatedAt: serverTimestamp() });
         return null;
       });
-      return existing ?? { id: book.id, ...data, addedAt: null, updatedAt: null };
+      return existing ?? { id: book.id, ...data, plan: null, addedAt: null, updatedAt: null };
     },
 
     async updateBook(uid, bookId, patch) {

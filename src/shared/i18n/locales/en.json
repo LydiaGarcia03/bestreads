@@ -88,7 +88,11 @@
     "seeAllReading_one": "See the {{count}} book you're reading",
     "seeAllReading_other": "See all {{count}} books you're reading",
     "seeShelf_one": "See the shelf ({{count}} book)",
-    "seeShelf_other": "See the whole shelf ({{count}} books)"
+    "seeShelf_other": "See the whole shelf ({{count}} books)",
+    "tonightsBook": "Tonight's book",
+    "todaysBook": "Today's book",
+    "pagesPlanned_one": "{{count}} page planned",
+    "pagesPlanned_other": "{{count}} pages planned"
   },
   "shelves": {
     "myShelves": "My shelves",
@@ -162,7 +166,44 @@
     "addPastRead": "+ Add a past read",
     "finishBeforeStart": "The finish date can't be before the start date."
   },
-  "series": {
+  "plan": {
+    "title": "Reading plan",
+    "add": "Add reading plan",
+    "addHint": "Pages per day, time and a reminder",
+    "formLabel": "Reading plan",
+    "pagesPerDay": "Pages per day",
+    "time": "Time",
+    "timeHint": "optional",
+    "weekdays": "Reading days",
+    "reminder": "Remind me at this time",
+    "reminderHint": "Adds a repeating event with an alarm to your calendar app (phone or computer).",
+    "save": "Save plan",
+    "cancel": "Cancel",
+    "edit": "Edit plan",
+    "remove": "Remove",
+    "removeLabel": "Remove the reading plan",
+    "tonightAt": "Tonight at {{time}}",
+    "todayAt": "Today at {{time}}",
+    "today": "Today",
+    "nextAt": "Next: {{day}} at {{time}}",
+    "next": "Next: {{day}}",
+    "everyDay": "Every day",
+    "pagesPerDayCount_one": "{{count}} page a day",
+    "pagesPerDayCount_other": "{{count}} pages a day",
+    "finishingAround": "finishing around {{date}}",
+    "finishingToday": "finishing today",
+    "needsPageCount": "the finish date needs the book's page count",
+    "estimate": "At this pace you finish around {{date}}.",
+    "addToCalendar": "Add reminder to calendar",
+    "calendarSummary_one": "Read {{title}} · {{count}} page",
+    "calendarSummary_other": "Read {{title}} · {{count}} pages",
+    "errors": {
+      "invalidPages": "Use a whole number from 1 to {{max}}.",
+      "invalidTime": "Use a time like 21:00.",
+      "noWeekdays": "Pick at least one day.",
+      "reminderNeedsTime": "Pick a time for the reminder."
+    }
+  },  "series": {
     "label": "Series",
     "nameAndVolume": "{{name}} · Book {{volume}}",
     "edit": "Edit",

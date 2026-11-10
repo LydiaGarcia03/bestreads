@@ -147,7 +147,7 @@ export class FakeLibraryRepository implements LibraryRepository {
   addBook = vi.fn(async (_uid: string, book: CatalogBook, status: ReadingStatus, today: string) => {
     const existing = this.books.get(book.id);
     if (existing) return existing;
-    const added: LibraryBook = { id: book.id, ...newLibraryBookData(book, status, today), addedAt: null, updatedAt: null };
+    const added: LibraryBook = { id: book.id, ...newLibraryBookData(book, status, today), plan: null, addedAt: null, updatedAt: null };
     this.books.set(book.id, added);
     return added;
   });
@@ -237,7 +237,14 @@ export const TEST_TODAY = '2026-11-09';
 /** A library book built from `createTestBook`, with optional overrides. */
 export function createTestLibraryBook(overrides: Partial<LibraryBook> = {}): LibraryBook {
   const book = createTestBook();
-  return { id: book.id, ...newLibraryBookData(book, 'wantToRead', TEST_TODAY), addedAt: null, updatedAt: null, ...overrides };
+  return {
+    id: book.id,
+    ...newLibraryBookData(book, 'wantToRead', TEST_TODAY),
+    plan: null,
+    addedAt: null,
+    updatedAt: null,
+    ...overrides,
+  };
 }
 
 export interface FakeServicesOptions {

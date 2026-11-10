@@ -180,6 +180,24 @@ describe('users/{uid}/books/{bookId}', () => {
     await assertFails(setDoc(doc(db, bookPath(OWNER, 'h')), bookDoc({ series: 'Dune' })));
   });
 
+  it('accepts an optional, valid reading plan only while reading', async () => {
+    const db = as(OWNER);
+    const plan = { pagesPerDay: 25, time: '21:30', weekdays: [1, 3, 5], reminder: true };
+    const reading = (overrides: Record<string, unknown>) => bookDoc({ status: 'reading', ...overrides });
+    await assertSucceeds(setDoc(doc(db, bookPath(OWNER, 'a')), reading({ plan })));
+    await assertSucceeds(setDoc(doc(db, bookPath(OWNER, 'b')), reading({ plan: { ...plan, time: null, reminder: false } })));
+    await assertSucceeds(setDoc(doc(db, bookPath(OWNER, 'c')), bookDoc({ status: 'read', plan: null })));
+    await assertFails(setDoc(doc(db, bookPath(OWNER, 'd')), bookDoc({ status: 'read', plan })));
+    await assertFails(setDoc(doc(db, bookPath(OWNER, 'e')), reading({ plan: { ...plan, pagesPerDay: 0 } })));
+    await assertFails(setDoc(doc(db, bookPath(OWNER, 'f')), reading({ plan: { ...plan, pagesPerDay: 2.5 } })));
+    await assertFails(setDoc(doc(db, bookPath(OWNER, 'g')), reading({ plan: { ...plan, time: '24:00' } })));
+    await assertFails(setDoc(doc(db, bookPath(OWNER, 'h')), reading({ plan: { ...plan, weekdays: [] } })));
+    await assertFails(setDoc(doc(db, bookPath(OWNER, 'i')), reading({ plan: { ...plan, weekdays: [1, 1] } })));
+    await assertFails(setDoc(doc(db, bookPath(OWNER, 'j')), reading({ plan: { ...plan, weekdays: [7] } })));
+    await assertFails(setDoc(doc(db, bookPath(OWNER, 'k')), reading({ plan: { ...plan, time: null } })));
+    await assertFails(setDoc(doc(db, bookPath(OWNER, 'l')), reading({ plan: { ...plan, note: 'x' } })));
+  });
+
   it('keeps addedAt and accepts the optional personal cover flag', async () => {
     await seed(bookPath(), storedBook());
     const db = as(OWNER);

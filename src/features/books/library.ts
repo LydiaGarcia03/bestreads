@@ -1,6 +1,7 @@
 /** Library domain: the user's copy of a book in `users/{uid}/books/{bookId}`. Pure, no React or I/O. */
 import type { BookSource, CatalogBook } from '@/features/catalog';
 import { isValidRating } from './rating';
+import { readPlan, type ReadingPlan } from './readingPlan';
 import { readsAfterStatusChange } from './reads';
 import { seriesFromCatalog, type BookSeriesInfo } from './series';
 
@@ -60,6 +61,8 @@ export interface LibraryBookState {
   hasPersonalCover: boolean;
   /** Series and volume, filled from the catalog when added and editable; `null` when not in a series. */
   series: BookSeriesInfo | null;
+  /** Optional reading plan; only for books being read (dropped when the status changes). */
+  plan: ReadingPlan | null;
 }
 
 export interface LibraryBook extends LibraryBookInfo, LibraryBookState {
@@ -69,8 +72,11 @@ export interface LibraryBook extends LibraryBookInfo, LibraryBookState {
   updatedAt: Date | null;
 }
 
-/** Document fields written by the app (timestamps are added by the data layer). */
-export type LibraryBookData = LibraryBookInfo & LibraryBookState;
+/**
+ * Fields written when a book is added (timestamps are added by the data layer). A new book has no
+ * reading plan, so plan is only written once one is made.
+ */
+export type LibraryBookData = LibraryBookInfo & Omit<LibraryBookState, 'plan'>;
 
 export function isReadingStatus(value: unknown): value is ReadingStatus {
   return typeof value === 'string' && (READING_STATUSES as readonly string[]).includes(value);
@@ -172,6 +178,7 @@ export function readLibraryBook(id: string, data: Readonly<Record<string, unknow
     // Books saved before personal covers existed have no such field.
     hasPersonalCover: data.hasPersonalCover === true,
     series: readSeries(data.series),
+    plan: data.status === 'reading' ? readPlan(data.plan) : null,
     addedAt: data.addedAt instanceof Date ? data.addedAt : null,
     updatedAt: data.updatedAt instanceof Date ? data.updatedAt : null,
   };
