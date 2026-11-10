@@ -34,11 +34,143 @@
     "error": "A busca não está disponível agora. Verifique sua conexão e tente de novo.",
     "retry": "Tentar de novo",
     "pageCount_one": "{{count}} página",
-    "pageCount_other": "{{count}} páginas"
+    "pageCount_other": "{{count}} páginas",
+    "published": "Publicado em {{date}}",
+    "categories": "Categorias",
+    "loadMore": "Carregar mais",
+    "loadingMore": "Carregando…",
+    "suggestions": "Livros sugeridos",
+    "seeAll": "Ver todos os resultados para “{{query}}”",
+    "view": {
+      "label": "Mostrar resultados em",
+      "list": "Lista",
+      "grid": "Grade"
+    }
   },
   "books": {
     "coverAlt": "Capa de {{title}}",
-    "noCover": "Sem capa para {{title}}"
+    "noCover": "Sem capa para {{title}}",
+    "by": "de {{authors}}",
+    "pageCount_one": "{{count}} página",
+    "pageCount_other": "{{count}} páginas",
+    "showMore": "Mostrar mais",
+    "showLess": "Mostrar menos",
+    "status": {
+      "wantToRead": "Quero ler",
+      "reading": "Lendo agora",
+      "read": "Lido"
+    },
+    "addToLibrary": "Adicionar à biblioteca",
+    "statusMenu": "Status de leitura",
+    "removeFromLibrary": "Remover da biblioteca",
+    "removeConfirm": "Remover “{{title}}” da sua biblioteca? A nota, o progresso e as datas deste livro serão apagados.",
+    "remove": "Remover",
+    "cancel": "Cancelar",
+    "saveError": "Não foi possível salvar. Verifique sua conexão e tente de novo.",
+    "loadError": "Não foi possível carregar este livro. Verifique sua conexão e tente de novo.",
+    "retry": "Tentar de novo",
+    "notFound": {
+      "title": "Livro não encontrado",
+      "description": "Este livro não está disponível nos catálogos de livros. Use a barra de busca para encontrar outra edição."
+    }
+  },
+  "home": {
+    "currentlyReading": "Lendo agora",
+    "notReading": "Você não está lendo nada agora. Encontre um livro na barra de busca e marque como “Lendo agora”.",
+    "pageOf": "Página {{page}} de {{total}} · {{percent}}%",
+    "openBook": "Abrir livro",
+    "popular": "Livros populares",
+    "popularHint": "O que os leitores mais estão lendo este ano.",
+    "popularLoading": "Carregando livros populares…",
+    "popularError": "Não foi possível carregar os livros populares.",
+    "seeAllReading_one": "Ver o {{count}} livro que você está lendo",
+    "seeAllReading_other": "Ver todos os {{count}} livros que você está lendo",
+    "seeShelf_one": "Ver a estante ({{count}} livro)",
+    "seeShelf_other": "Ver a estante inteira ({{count}} livros)"
+  },
+  "shelves": {
+    "myShelves": "Minhas estantes",
+    "chooseShelf": "Estantes",
+    "newShelf": "+ Nova estante",
+    "newShelfLabel": "Nome da nova estante",
+    "create": "Criar",
+    "save": "Salvar",
+    "manage": "Suas estantes",
+    "noCustomShelves": "Você ainda não tem estantes próprias.",
+    "renameLabel": "Novo nome para “{{name}}”",
+    "rename": "Renomear {{name}}",
+    "renameShort": "Renomear",
+    "delete": "Apagar {{name}}",
+    "deleteShort": "Apagar",
+    "deleteConfirm": "Apagar a estante “{{name}}”? Os livros continuam na sua biblioteca.",
+    "moveUp": "Mover {{name}} para cima",
+    "moveDown": "Mover {{name}} para baixo",
+    "limitReached": "Você pode ter até {{max}} estantes.",
+    "errors": {
+      "empty": "Digite um nome.",
+      "tooLong": "Use no máximo {{max}} caracteres.",
+      "duplicate": "Você já tem uma estante com esse nome."
+    },
+    "bookShelves": "Estantes",
+    "addToShelf": "+ Estante",
+    "editBookShelves": "Editar estantes",
+    "chooseShelves": "Colocar este livro em",
+    "loading": "Carregando livros…",
+    "loadError": "Não foi possível carregar esta estante. Verifique sua conexão e tente de novo.",
+    "empty": "Ainda não há livros nesta estante.",
+    "unknownShelf": "Estante não encontrada",
+    "unknownShelfHint": "Esta estante não existe mais. Escolha outra acima.",
+    "progress": "{{value}}% lido"
+  },
+  "progress": {
+    "title": "Progresso",
+    "percent": "{{value}}%",
+    "pageOf": "página {{page}} de {{total}}",
+    "page": "página {{page}}",
+    "notStarted": "Ainda não começou",
+    "update": "Atualizar progresso",
+    "unitLabel": "Acompanhar progresso por",
+    "units": {
+      "pages": "Páginas",
+      "percent": "%"
+    },
+    "onPage": "Estou na página",
+    "atPercent": "Estou em",
+    "ofPages": "de {{total}}",
+    "save": "Salvar",
+    "errors": {
+      "invalid": "Digite um número inteiro.",
+      "overPages": "Este livro tem {{total}} páginas.",
+      "overPercent": "Digite uma porcentagem até 100."
+    },
+    "finishedQuestion": "Terminou?",
+    "markAsRead": "Marcar como lido"
+  },
+  "reads": {
+    "title": "Datas de leitura",
+    "readNumber": "Leitura {{number}}",
+    "started": "Início",
+    "finished": "Fim",
+    "addDate": "Adicionar data",
+    "clearDate": "Apagar data: {{label}}",
+    "remove": "Remover",
+    "addPastRead": "+ Adicionar leitura anterior",
+    "finishBeforeStart": "A data de fim não pode ser antes da data de início."
+  },
+  "rating": {
+    "title": "Minha nota",
+    "stars": "Estrelas da nota",
+    "rateStars_one": "Dar {{count}} estrela",
+    "rateStars_other": "Dar {{count}} estrelas",
+    "fineTune": "Ajustar nota",
+    "lower": "Diminuir a nota em {{step}}",
+    "raise": "Aumentar a nota em {{step}}",
+    "value": "{{value}} de 5",
+    "unrated": "Sem nota",
+    "clear": "Apagar nota",
+    "public": "Compartilhar nota publicamente",
+    "publicHint": "Os outros veem só a nota, o título, o autor e a capa. Sua resenha, progresso e datas continuam privados.",
+    "saveError": "Não foi possível salvar sua nota. Verifique sua conexão e tente de novo."
   },
   "pages": {
     "home": { "title": "Início" },
@@ -108,6 +240,10 @@
     "options": {
       "en": "EN",
       "pt-BR": "PT-BR"
+    },
+    "names": {
+      "en": "English",
+      "pt-BR": "Português (Brasil)"
     }
   }
 }

@@ -4,8 +4,9 @@ import type { ReactNode } from 'react';
 import { I18nextProvider } from 'react-i18next';
 import { PreferencesSync } from '@/features/account';
 import { AuthProvider } from '@/features/auth';
+import { LibraryContextProvider } from '@/features/books';
 import { ThemeProvider } from '@/features/preferences';
-import { BookSearchContextProvider } from '@/features/search';
+import { CatalogContextProvider } from '@/features/catalog';
 import type { AppServices } from './services';
 
 export interface AppProvidersProps {
@@ -23,7 +24,9 @@ export function AppProviders({ i18n, queryClient, services, children }: AppProvi
         <ThemeProvider>
           <AuthProvider loadService={services.loadAuthService}>
             <PreferencesSync loadRepository={services.loadUserRepository} />
-            <BookSearchContextProvider provider={services.bookSearch}>{children}</BookSearchContextProvider>
+            <CatalogContextProvider provider={services.catalog}>
+              <LibraryContextProvider loadRepository={services.loadLibraryRepository}>{children}</LibraryContextProvider>
+            </CatalogContextProvider>
           </AuthProvider>
         </ThemeProvider>
       </QueryClientProvider>

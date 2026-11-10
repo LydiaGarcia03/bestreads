@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { createI18n } from '@/shared/i18n';
-import { createFakeServices, FakeAuthService, FakeUserRepository, TEST_USER } from '@/test/fakes';
+import { createFakeServices, FakeAuthService, TEST_USER } from '@/test/fakes';
 import { App } from './App';
 import { AppProviders } from './AppProviders';
 import { createQueryClient } from './queryClient';
@@ -10,7 +10,7 @@ function renderApp(authService: FakeAuthService) {
     <AppProviders
       i18n={createI18n('en')}
       queryClient={createQueryClient({ retry: false })}
-      services={createFakeServices(authService, new FakeUserRepository())}
+      services={createFakeServices({ authService })}
     >
       <App />
     </AppProviders>,

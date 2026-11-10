@@ -34,11 +34,143 @@
     "error": "Search isn't available right now. Check your connection and try again.",
     "retry": "Try again",
     "pageCount_one": "{{count}} page",
-    "pageCount_other": "{{count}} pages"
+    "pageCount_other": "{{count}} pages",
+    "published": "Published {{date}}",
+    "categories": "Categories",
+    "loadMore": "Load more",
+    "loadingMore": "Loading…",
+    "suggestions": "Suggested books",
+    "seeAll": "See all results for “{{query}}”",
+    "view": {
+      "label": "Show results as",
+      "list": "List",
+      "grid": "Grid"
+    }
   },
   "books": {
     "coverAlt": "Cover of {{title}}",
-    "noCover": "No cover for {{title}}"
+    "noCover": "No cover for {{title}}",
+    "by": "by {{authors}}",
+    "pageCount_one": "{{count}} page",
+    "pageCount_other": "{{count}} pages",
+    "showMore": "Show more",
+    "showLess": "Show less",
+    "status": {
+      "wantToRead": "Want to read",
+      "reading": "Currently reading",
+      "read": "Read"
+    },
+    "addToLibrary": "Add to library",
+    "statusMenu": "Reading status",
+    "removeFromLibrary": "Remove from library",
+    "removeConfirm": "Remove “{{title}}” from your library? Your rating, progress and dates for it will be deleted.",
+    "remove": "Remove",
+    "cancel": "Cancel",
+    "saveError": "Couldn't save. Check your connection and try again.",
+    "loadError": "Couldn't load this book. Check your connection and try again.",
+    "retry": "Try again",
+    "notFound": {
+      "title": "Book not found",
+      "description": "This book isn't available in the book catalogs. Use the search bar to find another edition."
+    }
+  },
+  "home": {
+    "currentlyReading": "Currently reading",
+    "notReading": "You're not reading anything right now. Find a book with the search bar and mark it as “Currently reading”.",
+    "pageOf": "Page {{page}} of {{total}} · {{percent}}%",
+    "openBook": "Open book",
+    "popular": "Popular books",
+    "popularHint": "What readers are reading most this year.",
+    "popularLoading": "Loading popular books…",
+    "popularError": "Couldn't load popular books.",
+    "seeAllReading_one": "See the {{count}} book you're reading",
+    "seeAllReading_other": "See all {{count}} books you're reading",
+    "seeShelf_one": "See the shelf ({{count}} book)",
+    "seeShelf_other": "See the whole shelf ({{count}} books)"
+  },
+  "shelves": {
+    "myShelves": "My shelves",
+    "chooseShelf": "Shelves",
+    "newShelf": "+ New shelf",
+    "newShelfLabel": "New shelf name",
+    "create": "Create",
+    "save": "Save",
+    "manage": "Your shelves",
+    "noCustomShelves": "You don't have any shelves of your own yet.",
+    "renameLabel": "New name for “{{name}}”",
+    "rename": "Rename {{name}}",
+    "renameShort": "Rename",
+    "delete": "Delete {{name}}",
+    "deleteShort": "Delete",
+    "deleteConfirm": "Delete the shelf “{{name}}”? Its books stay in your library.",
+    "moveUp": "Move {{name}} up",
+    "moveDown": "Move {{name}} down",
+    "limitReached": "You can have up to {{max}} shelves.",
+    "errors": {
+      "empty": "Enter a name.",
+      "tooLong": "Use at most {{max}} characters.",
+      "duplicate": "You already have a shelf with this name."
+    },
+    "bookShelves": "Shelves",
+    "addToShelf": "+ Shelf",
+    "editBookShelves": "Edit shelves",
+    "chooseShelves": "Put this book on",
+    "loading": "Loading books…",
+    "loadError": "Couldn't load this shelf. Check your connection and try again.",
+    "empty": "No books on this shelf yet.",
+    "unknownShelf": "Shelf not found",
+    "unknownShelfHint": "This shelf doesn't exist anymore. Pick another one above.",
+    "progress": "{{value}}% read"
+  },
+  "progress": {
+    "title": "Progress",
+    "percent": "{{value}}%",
+    "pageOf": "page {{page}} of {{total}}",
+    "page": "page {{page}}",
+    "notStarted": "Not started yet",
+    "update": "Update progress",
+    "unitLabel": "Track progress by",
+    "units": {
+      "pages": "Pages",
+      "percent": "%"
+    },
+    "onPage": "I'm on page",
+    "atPercent": "I'm at",
+    "ofPages": "of {{total}}",
+    "save": "Save",
+    "errors": {
+      "invalid": "Enter a whole number.",
+      "overPages": "This book has {{total}} pages.",
+      "overPercent": "Enter a percentage up to 100."
+    },
+    "finishedQuestion": "Finished it?",
+    "markAsRead": "Mark as read"
+  },
+  "reads": {
+    "title": "Reading dates",
+    "readNumber": "Read {{number}}",
+    "started": "Started",
+    "finished": "Finished",
+    "addDate": "Add date",
+    "clearDate": "Clear date: {{label}}",
+    "remove": "Remove",
+    "addPastRead": "+ Add a past read",
+    "finishBeforeStart": "The finish date can't be before the start date."
+  },
+  "rating": {
+    "title": "My rating",
+    "stars": "Rating stars",
+    "rateStars_one": "Rate {{count}} star",
+    "rateStars_other": "Rate {{count}} stars",
+    "fineTune": "Fine-tune rating",
+    "lower": "Lower rating by {{step}}",
+    "raise": "Raise rating by {{step}}",
+    "value": "{{value}} out of 5",
+    "unrated": "Not rated",
+    "clear": "Clear rating",
+    "public": "Share rating publicly",
+    "publicHint": "Others see only the rating, title, author and cover. Your review, progress and dates stay private.",
+    "saveError": "Couldn't save your rating. Check your connection and try again."
   },
   "pages": {
     "home": { "title": "Home" },
@@ -108,6 +240,10 @@
     "options": {
       "en": "EN",
       "pt-BR": "PT-BR"
+    },
+    "names": {
+      "en": "English",
+      "pt-BR": "Português (Brasil)"
     }
   }
 }

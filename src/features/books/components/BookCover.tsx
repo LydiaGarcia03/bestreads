@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ShelvesIcon } from '@/shared/ui/icons';
+import { BooksIcon } from '@/shared/ui/icons';
 
 export interface BookCoverProps {
   src: string | null;
@@ -41,7 +41,7 @@ function CoverPlaceholder({ title }: { title: string }) {
 
   return (
     <div role="img" aria-label={t('books.noCover', { title })} className="flex size-full items-center justify-center text-dot">
-      <ShelvesIcon size={24} />
+      <BooksIcon size={24} />
     </div>
   );
 }

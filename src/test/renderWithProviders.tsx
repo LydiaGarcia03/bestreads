@@ -10,7 +10,8 @@ import { createI18n, type Language } from '@/shared/i18n';
 import {
   createFakeServices,
   FakeAuthService,
-  FakeBookSearchProvider,
+  FakeCatalog,
+  FakeLibraryRepository,
   FakeUserRepository,
   TEST_USER,
 } from './fakes';
@@ -26,7 +27,8 @@ export interface RenderWithProvidersOptions extends Omit<RenderOptions, 'wrapper
   user?: AuthUser | null;
   authService?: FakeAuthService;
   userRepository?: FakeUserRepository;
-  bookSearch?: FakeBookSearchProvider;
+  catalog?: FakeCatalog;
+  library?: FakeLibraryRepository;
 }
 
 export interface RenderWithProvidersResult extends RenderResult {
@@ -34,7 +36,8 @@ export interface RenderWithProvidersResult extends RenderResult {
   queryClient: QueryClient;
   authService: FakeAuthService;
   userRepository: FakeUserRepository;
-  bookSearch: FakeBookSearchProvider;
+  catalog: FakeCatalog;
+  library: FakeLibraryRepository;
 }
 
 /** Renders a UI inside the app's real providers, fake services and an in-memory router, isolated per test. */
@@ -46,18 +49,27 @@ export function renderWithProviders(
     user = TEST_USER,
     authService = new FakeAuthService(user),
     userRepository = new FakeUserRepository(),
-    bookSearch = new FakeBookSearchProvider(),
+    catalog = new FakeCatalog(),
+    library = new FakeLibraryRepository(),
     ...options
   }: RenderWithProvidersOptions = {},
 ): RenderWithProvidersResult {
   const i18n = createI18n(language);
   // No retries, so failure states show up immediately.
   const queryClient = createQueryClient({ retry: false });
-  const services = createFakeServices(authService, userRepository, bookSearch);
+  const services = createFakeServices({ authService, userRepository, catalog, library });
   const wrapper = ({ children }: { children: ReactNode }) => (
     <AppProviders i18n={i18n} queryClient={queryClient} services={services}>
       <MemoryRouter initialEntries={[route]}>{children}</MemoryRouter>
     </AppProviders>
   );
-  return { ...render(ui, { wrapper, ...options }), i18n, queryClient, authService, userRepository, bookSearch };
+  return {
+    ...render(ui, { wrapper, ...options }),
+    i18n,
+    queryClient,
+    authService,
+    userRepository,
+    catalog,
+    library,
+  };
 }

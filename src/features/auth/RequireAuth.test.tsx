@@ -3,7 +3,7 @@ import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { AppProviders } from '@/app/AppProviders';
 import { createQueryClient } from '@/app/queryClient';
 import { createI18n } from '@/shared/i18n';
-import { FakeBookSearchProvider, FakeUserRepository } from '@/test/fakes';
+import { createFakeServices, FakeAuthService } from '@/test/fakes';
 import { renderWithProviders } from '@/test/renderWithProviders';
 import { RequireAuth } from './RequireAuth';
 
@@ -35,15 +35,13 @@ describe('RequireAuth', () => {
 
   it('shows a reconnect message when the auth service cannot load', async () => {
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
-    const repository = new FakeUserRepository();
     render(
       <AppProviders
         i18n={createI18n('en')}
         queryClient={createQueryClient({ retry: false })}
         services={{
+          ...createFakeServices({ authService: new FakeAuthService(null) }),
           loadAuthService: () => Promise.reject(new Error('offline')),
-          loadUserRepository: () => Promise.resolve(repository),
-          bookSearch: new FakeBookSearchProvider(),
         }}
       >
         <MemoryRouter initialEntries={['/shelves']}>{routes}</MemoryRouter>

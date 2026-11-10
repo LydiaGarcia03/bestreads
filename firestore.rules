@@ -1,8 +1,9 @@
 rules_version = '2';
 
 // Default: everything is denied. Each collection opens only what the app needs.
-// Limits mirror the app: DISPLAY_NAME_MAX_LENGTH (src/features/auth/credentials.ts)
-// and PHOTO_URL_MAX_LENGTH (src/features/account/userDocument.ts).
+// Limits mirror the app: DISPLAY_NAME_MAX_LENGTH (src/features/auth/credentials.ts),
+// PHOTO_URL_MAX_LENGTH (src/features/account/userDocument.ts), LIBRARY_LIMITS
+// (src/features/books/library.ts) and the rating rules (src/features/books/rating.ts).
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -49,6 +50,111 @@ service cloud.firestore {
         && request.resource.data.createdAt == resource.data.createdAt;
       // Account deletion is not supported yet.
       allow delete: if false;
+    }
+
+    // A multiple of 0.25 in (0, 5], or null when unrated.
+    function isValidRating(rating) {
+      return rating == null
+        || (rating is number && rating > 0 && rating <= 5 && rating * 4 == math.floor(rating * 4));
+    }
+
+    function isValidProgress(progress) {
+      return progress == null
+        || (progress is map
+          && progress.keys().hasOnly(['unit', 'value'])
+          && progress.keys().hasAll(['unit', 'value'])
+          && progress.unit in ['pages', 'percent']
+          && progress.value is number
+          && progress.value >= 0
+          && (progress.unit == 'pages' || progress.value <= 100));
+    }
+
+    function isValidBook(data) {
+      let fields = ['title', 'subtitle', 'authors', 'coverUrl', 'description', 'pageCount', 'isbn',
+        'publishedYear', 'source', 'status', 'shelfIds', 'rating', 'ratingPublic', 'progress', 'reads',
+        'addedAt', 'updatedAt'];
+      return data.keys().hasOnly(fields)
+        && data.keys().hasAll(fields)
+        && data.title is string && data.title.size() > 0 && data.title.size() <= 300
+        && isNullableString(data.subtitle, 300)
+        && data.authors is list && data.authors.size() <= 20
+        && isNullableString(data.coverUrl, 2048)
+        && isNullableString(data.description, 5000)
+        && (data.pageCount == null || (data.pageCount is int && data.pageCount > 0))
+        && isNullableString(data.isbn, 13)
+        && (data.publishedYear == null || data.publishedYear is int)
+        && data.source in ['googleBooks', 'openLibrary']
+        && data.status in ['wantToRead', 'reading', 'read']
+        && data.shelfIds is list && data.shelfIds.size() <= 50
+        && isValidRating(data.rating)
+        && data.ratingPublic is bool
+        && isValidProgress(data.progress)
+        && data.reads is list && data.reads.size() <= 100
+        && data.addedAt is timestamp
+        && data.updatedAt == request.time;
+    }
+
+    // users/{uid}/books/{bookId}: the user's library, owner only. bookId is the catalog id.
+    match /users/{uid}/books/{bookId} {
+      allow read: if isOwner(uid);
+      allow create: if isOwner(uid)
+        && isValidBook(request.resource.data)
+        && request.resource.data.addedAt == request.time;
+      allow update: if isOwner(uid)
+        && isValidBook(request.resource.data)
+        && request.resource.data.addedAt == resource.data.addedAt;
+      allow delete: if isOwner(uid);
+    }
+
+    // A custom shelf (src/features/books/shelves.ts, SHELF_LIMITS). Books list it in shelfIds.
+    function isValidShelf(data) {
+      return data.keys().hasOnly(['name', 'order', 'createdAt'])
+        && data.keys().hasAll(['name', 'order', 'createdAt'])
+        && data.name is string && data.name.size() > 0 && data.name.size() <= 50
+        && data.order is number
+        && data.createdAt is timestamp;
+    }
+
+    // users/{uid}/shelves/{shelfId}: the user's custom shelves, owner only.
+    match /users/{uid}/shelves/{shelfId} {
+      allow read: if isOwner(uid);
+      allow create: if isOwner(uid)
+        && isValidShelf(request.resource.data)
+        && request.resource.data.createdAt == request.time;
+      allow update: if isOwner(uid)
+        && isValidShelf(request.resource.data)
+        && request.resource.data.createdAt == resource.data.createdAt;
+      allow delete: if isOwner(uid);
+    }
+
+    // The slim public copy of a rating (src/features/books/rating.ts, publicRatingOf): nothing private.
+    function isValidPublicRating(data) {
+      let fields = ['title', 'authors', 'coverUrl', 'rating', 'ratedAt'];
+      return data.keys().hasOnly(fields)
+        && data.keys().hasAll(fields)
+        && data.title is string && data.title.size() > 0 && data.title.size() <= 300
+        && data.authors is list && data.authors.size() <= 20
+        && isNullableString(data.coverUrl, 2048)
+        && data.rating != null && isValidRating(data.rating)
+        && data.ratedAt == request.time;
+    }
+
+    // The private book, as it will be once the current write (batch) is applied.
+    function bookAfterWrite(uid, bookId) {
+      return getAfter(/databases/$(database)/documents/users/$(uid)/books/$(bookId)).data;
+    }
+
+    // public/{uid}/ratings/{bookId}: ratings the owner made public, readable by any signed-in user.
+    // Written in the same batch as the private book, which must be in the library, marked public
+    // and hold the same rating, so the copy can't drift from the user's own data.
+    match /public/{uid}/ratings/{bookId} {
+      allow read: if request.auth != null;
+      allow create, update: if isOwner(uid)
+        && isValidPublicRating(request.resource.data)
+        && existsAfter(/databases/$(database)/documents/users/$(uid)/books/$(bookId))
+        && bookAfterWrite(uid, bookId).ratingPublic == true
+        && bookAfterWrite(uid, bookId).rating == request.resource.data.rating;
+      allow delete: if isOwner(uid);
     }
 
     // admins/{uid}: a user can check whether they are an admin; nobody can write from the app.
