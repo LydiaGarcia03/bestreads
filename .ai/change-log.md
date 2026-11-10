@@ -13,6 +13,13 @@ Format:
 ---
 
 ## 2026-11-10
+- feat(series): series per book, series sidebar and series groups on shelves (Phase 4 done).
+  - Domain: `src/features/books/series.ts` (name/volume limits, parsing, matching, catalog mapping, suggestions), `seriesTimeline.ts` (volumes of a series from the library + Open Library, states read / reading / unread / not in library, summary), `seriesGroups.ts` (2+ books of a series on a shelf become one group in volume order).
+  - Data: optional `series { name, volume }` on `users/{uid}/books/{bookId}`, filled from the catalog when a book is added; `listSeriesBooks` / `listSeriesNames` in the repository (limited queries); `seriesBooks(name)` on `CatalogProvider` (Open Library, up to 60; Google Books returns none). `firestore.rules`: `isValidSeries` + rules test.
+  - Hooks: `useSeries.ts` (`useSeriesNames`, `useSeriesBooks`, `useCatalogSeries` with a 1-day cache); series changes refresh the series queries.
+  - UI: `SeriesEditor` (series + volume with suggestions), `SeriesPanel` (progress bar, dot timeline, "+ Add" per missing volume, add all missing to Want to read; full-height sticky sidebar on desktop, after the dates on phones), `SeriesDot`, collapsible series groups with dots in `src/features/shelves/components/ShelfBookList.tsx`. i18n `series.*` and `shelves.series*` (en, pt-BR).
+  - Tests: domain, editor, panel, shelf groups.
+- docs(ai): Phase 4 marked done; current phase is Phase 5 (`.ai/development-plan.md`).
 - test(rules): Firestore security rules tests on the emulator (Phase 3 done).
   - Dev dependencies `firebase-tools` (^15.35) and `@firebase/rules-unit-testing` (^6); not part of the app bundle. `npm audit` reports 28 advisories (23 moderate, 5 high) in their dependency tree, dev only.
   - `firebase.json` (rules file, Firestore emulator on 127.0.0.1:8080, UI off), `vitest.rules.config.ts` (node, files one after another), `tsconfig.rules.json` (referenced from `tsconfig.json`), `npm run test:rules` (`firebase emulators:exec --only firestore --project demo-bestreads`; the `demo-` project never reaches the real Firebase). The app's Vitest config only includes `src/**`.

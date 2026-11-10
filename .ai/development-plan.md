@@ -5,7 +5,7 @@ Each phase lists its tasks and a "Done when" checklist. Mark tasks with `[x]` as
 
 Status legend: `[ ]` not started · `[~]` in progress · `[x]` done
 
-Current phase: **Phase 4 — Series** (next; Phases 2 and 3 are done except the 390px / light theme check on a real phone or DevTools)
+Current phase: **Phase 5 — Reading plan** (next; Phases 2–4 are done except the 390px / light theme check on a real phone or DevTools)
 
 ---
 
@@ -141,11 +141,11 @@ Done when:
 
 ## Phase 4 — Series
 
-- [ ] Series name + volume number per book
-- [ ] Suggestions from series already used by the user
-- [ ] Series as ordered, collapsible group inside a shelf
-- [ ] Dot timeline (filled = read, ring = reading, outlined = not read)
-- [ ] Desktop book page: full-height, independently scrolling series sidebar
+- [x] Series name + volume number per book (filled from the catalog when added, editable; optional `series` in `firestore.rules`, published)
+- [x] Suggestions from series already used by the user
+- [x] Series as ordered, collapsible group inside a shelf (2+ books of a series on the same shelf; volume order; expanded by default)
+- [x] Dot timeline (filled = read, ring = reading, outlined = not read; dashed = not in the library)
+- [x] Desktop book page: full-height, independently scrolling series sidebar (on phones, the series section follows the dates), with every volume known to Open Library, "+ Add" per missing volume and "Add the N missing books to Want to read"
 
 ---
 
