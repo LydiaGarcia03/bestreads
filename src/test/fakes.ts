@@ -17,6 +17,12 @@ import { sortShelves } from '@/features/books/shelves';
 // Test helpers may use domain internals to build realistic data.
 import { newLibraryBookData } from '@/features/books/library';
 import type { CatalogBook, CatalogProvider, CatalogSearchOptions, CatalogSearchResult } from '@/features/catalog';
+import type { PublicProfile, PublicProfileDetails, SocialRepository } from '@/features/social';
+// Test helpers throw the same errors as the real repository.
+import { UsernameAlreadySetError, UsernameTakenError } from '@/features/social/types';
+// Test helpers may use domain internals to build realistic data.
+import type { FollowCounts } from '@/features/social/follows';
+import type { PublicRating, PublicRatingsCursor } from '@/features/social/publicRating';
 
 export const TEST_USER: AuthUser = {
   uid: 'test-user',
@@ -247,11 +253,109 @@ export function createTestLibraryBook(overrides: Partial<LibraryBook> = {}): Lib
   };
 }
 
+/**
+ * In-memory `usernames/{username}` and `public/{uid}` for every user.
+ * Methods are spies, so tests can check calls or force errors.
+ */
+export class FakeSocialRepository implements SocialRepository {
+  readonly profiles = new Map<string, PublicProfile>();
+
+  constructor(profiles: PublicProfile[] = []) {
+    profiles.forEach((profile) => this.profiles.set(profile.uid, profile));
+  }
+
+  getPublicProfile = vi.fn(async (uid: string) => this.profiles.get(uid) ?? null);
+
+  claimUsername = vi.fn(async (uid: string, username: string, details: PublicProfileDetails) => {
+    if (this.profiles.has(uid)) throw new UsernameAlreadySetError();
+    if ([...this.profiles.values()].some((profile) => profile.username === username)) {
+      throw new UsernameTakenError(username);
+    }
+    const profile = { uid, username, ...details };
+    this.profiles.set(uid, profile);
+    return profile;
+  });
+
+  findProfileByUsername = vi.fn(
+    async (username: string) => [...this.profiles.values()].find((profile) => profile.username === username) ?? null,
+  );
+
+  /** Public ratings per user, newest first. */
+  readonly ratings = new Map<string, PublicRating[]>();
+
+  listPublicRatings = vi.fn(
+    async (uid: string, { pageSize, after }: { pageSize: number; after: PublicRatingsCursor | null }) => {
+      const all = this.ratings.get(uid) ?? [];
+      const start = after ? all.findIndex((rating) => rating.bookId === after.bookId) + 1 : 0;
+      const ratings = all.slice(start, start + pageSize);
+      const last = ratings.at(-1);
+      const hasMore = start + pageSize < all.length;
+      return { ratings, next: hasMore && last?.ratedAt ? { ratedAt: last.ratedAt, bookId: last.bookId } : null };
+    },
+  );
+
+  /** `followerUid_followedUid` pairs. */
+  readonly follows = new Set<string>();
+
+  isFollowing = vi.fn(async (followerUid: string, followedUid: string) =>
+    this.follows.has(`${followerUid}_${followedUid}`),
+  );
+
+  follow = vi.fn(async (followerUid: string, followedUid: string) => {
+    this.follows.add(`${followerUid}_${followedUid}`);
+  });
+
+  unfollow = vi.fn(async (followerUid: string, followedUid: string) => {
+    this.follows.delete(`${followerUid}_${followedUid}`);
+  });
+
+  countFollows = vi.fn(async (uid: string): Promise<FollowCounts> => {
+    const pairs = [...this.follows].map((pair) => pair.split('_'));
+    return {
+      followers: pairs.filter(([, followed]) => followed === uid).length,
+      following: pairs.filter(([follower]) => follower === uid).length,
+    };
+  });
+
+  /** Profiles on the other side of `uid`'s follows, in follow order. */
+  private profilesFollowing(uid: string, side: 'following' | 'followers'): PublicProfile[] {
+    return [...this.follows]
+      .map((pair) => {
+        const [follower = '', followed = ''] = pair.split('_');
+        if (side === 'following') return follower === uid ? followed : null;
+        return followed === uid ? follower : null;
+      })
+      .map((other) => (other === null ? undefined : this.profiles.get(other)))
+      .filter((profile) => profile !== undefined);
+  }
+
+  listFollowing = vi.fn(async (uid: string) => this.profilesFollowing(uid, 'following'));
+
+  listFollowers = vi.fn(async (uid: string) => this.profilesFollowing(uid, 'followers'));
+}
+
+export function createTestProfile(overrides: Partial<PublicProfile> = {}): PublicProfile {
+  return { uid: 'friend-uid', username: 'friend', displayName: 'Friendly Reader', photoURL: null, ...overrides };
+}
+
+export function createTestPublicRating(overrides: Partial<PublicRating> = {}): PublicRating {
+  return {
+    bookId: 'vol-1',
+    title: 'Project Hail Mary',
+    authors: ['Andy Weir'],
+    coverUrl: null,
+    rating: 4.5,
+    ratedAt: new Date('2026-11-01T12:00:00Z'),
+    ...overrides,
+  };
+}
+
 export interface FakeServicesOptions {
   authService: AuthService;
   userRepository?: UserRepository;
   catalog?: CatalogProvider;
   library?: LibraryRepository;
+  social?: SocialRepository;
 }
 
 export function createFakeServices({
@@ -259,11 +363,13 @@ export function createFakeServices({
   userRepository = new FakeUserRepository(),
   catalog = new FakeCatalog(),
   library = new FakeLibraryRepository(),
+  social = new FakeSocialRepository(),
 }: FakeServicesOptions): AppServices {
   return {
     loadAuthService: () => Promise.resolve(authService),
     loadUserRepository: () => Promise.resolve(userRepository),
     loadLibraryRepository: () => Promise.resolve(library),
+    loadSocialRepository: () => Promise.resolve(social),
     catalog,
   };
 }

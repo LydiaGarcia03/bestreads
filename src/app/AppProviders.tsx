@@ -7,6 +7,7 @@ import { AuthProvider } from '@/features/auth';
 import { LibraryContextProvider } from '@/features/books';
 import { ThemeProvider } from '@/features/preferences';
 import { CatalogContextProvider } from '@/features/catalog';
+import { SocialContextProvider } from '@/features/social';
 import type { AppServices } from './services';
 
 export interface AppProvidersProps {
@@ -25,7 +26,9 @@ export function AppProviders({ i18n, queryClient, services, children }: AppProvi
           <AuthProvider loadService={services.loadAuthService}>
             <PreferencesSync loadRepository={services.loadUserRepository} />
             <CatalogContextProvider provider={services.catalog}>
-              <LibraryContextProvider loadRepository={services.loadLibraryRepository}>{children}</LibraryContextProvider>
+              <LibraryContextProvider loadRepository={services.loadLibraryRepository}>
+                <SocialContextProvider loadRepository={services.loadSocialRepository}>{children}</SocialContextProvider>
+              </LibraryContextProvider>
             </CatalogContextProvider>
           </AuthProvider>
         </ThemeProvider>

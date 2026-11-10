@@ -11,6 +11,7 @@ describe('SettingsPage', () => {
 
     expect(screen.getByRole('heading', { level: 1, name: 'Settings' })).toBeInTheDocument();
     expect(screen.getByRole('region', { name: 'Account' })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Public profile' })).toBeInTheDocument();
     expect(screen.getByRole('region', { name: 'Appearance' })).toBeInTheDocument();
     expect(screen.getByRole('region', { name: 'Language' })).toBeInTheDocument();
     expect(screen.getByRole('group', { name: 'Theme' })).toBeInTheDocument();

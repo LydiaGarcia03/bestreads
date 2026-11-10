@@ -12,6 +12,7 @@ import {
   FakeAuthService,
   FakeCatalog,
   FakeLibraryRepository,
+  FakeSocialRepository,
   FakeUserRepository,
   TEST_USER,
 } from './fakes';
@@ -29,6 +30,7 @@ export interface RenderWithProvidersOptions extends Omit<RenderOptions, 'wrapper
   userRepository?: FakeUserRepository;
   catalog?: FakeCatalog;
   library?: FakeLibraryRepository;
+  social?: FakeSocialRepository;
 }
 
 export interface RenderWithProvidersResult extends RenderResult {
@@ -38,6 +40,7 @@ export interface RenderWithProvidersResult extends RenderResult {
   userRepository: FakeUserRepository;
   catalog: FakeCatalog;
   library: FakeLibraryRepository;
+  social: FakeSocialRepository;
 }
 
 /** Renders a UI inside the app's real providers, fake services and an in-memory router, isolated per test. */
@@ -51,13 +54,14 @@ export function renderWithProviders(
     userRepository = new FakeUserRepository(),
     catalog = new FakeCatalog(),
     library = new FakeLibraryRepository(),
+    social = new FakeSocialRepository(),
     ...options
   }: RenderWithProvidersOptions = {},
 ): RenderWithProvidersResult {
   const i18n = createI18n(language);
   // No retries, so failure states show up immediately.
   const queryClient = createQueryClient({ retry: false });
-  const services = createFakeServices({ authService, userRepository, catalog, library });
+  const services = createFakeServices({ authService, userRepository, catalog, library, social });
   const wrapper = ({ children }: { children: ReactNode }) => (
     <AppProviders i18n={i18n} queryClient={queryClient} services={services}>
       <MemoryRouter initialEntries={[route]}>{children}</MemoryRouter>
@@ -71,5 +75,6 @@ export function renderWithProviders(
     userRepository,
     catalog,
     library,
+    social,
   };
 }

@@ -10,13 +10,19 @@ import {
   type RulesTestEnvironment,
 } from '@firebase/rules-unit-testing';
 import {
+  collection,
   deleteDoc,
   doc,
   getDoc,
+  getDocs,
+  limit,
+  orderBy,
+  query,
   serverTimestamp,
   setDoc,
   Timestamp,
   updateDoc,
+  where,
   writeBatch,
   type Firestore,
 } from 'firebase/firestore';
@@ -302,9 +308,134 @@ describe('users/{uid}/shelves/{shelfId}', () => {
   });
 });
 
+describe('usernames/{username} and public/{uid}', () => {
+  const profile = (overrides: Record<string, unknown> = {}) => ({
+    username: 'reader',
+    displayName: 'Reader',
+    photoURL: null,
+    ...overrides,
+  });
+
+  /** Claims a username the way the app does: the username and the public profile in one write. */
+  const claim = (db: Firestore, uid: string, username: string, owner = uid, data = profile({ username })) => {
+    const batch = writeBatch(db);
+    batch.set(doc(db, `usernames/${username}`), { uid: owner, createdAt: serverTimestamp() });
+    batch.set(doc(db, `public/${uid}`), data);
+    return batch.commit();
+  };
+
+  it('lets a user claim a free username with their public profile, readable one at a time', async () => {
+    await assertSucceeds(claim(as(OWNER), OWNER, 'reader'));
+    await assertSucceeds(getDoc(doc(as(OTHER), 'usernames/reader')));
+    await assertSucceeds(getDoc(doc(as(OTHER), `public/${OWNER}`)));
+    await assertFails(getDoc(doc(anonymous(), `public/${OWNER}`)));
+    await assertFails(getDoc(doc(anonymous(), 'usernames/reader')));
+  });
+
+  it('never lists usernames or public profiles', async () => {
+    await claim(as(OWNER), OWNER, 'reader');
+    await assertFails(getDocs(collection(as(OTHER), 'usernames')));
+    await assertFails(getDocs(collection(as(OTHER), 'public')));
+  });
+
+  it('refuses a taken, invalid or reserved username', async () => {
+    await claim(as(OWNER), OWNER, 'reader');
+    await assertFails(claim(as(OTHER), OTHER, 'reader'));
+    for (const username of ['ab', 'x'.repeat(21), 'Reader', 'read-er', 'admin']) {
+      await assertFails(claim(as(OTHER), OTHER, username));
+    }
+    await assertSucceeds(claim(as(OTHER), OTHER, 'other_1'));
+  });
+
+  it('needs both documents to agree and gives one username per user', async () => {
+    const db = as(OTHER);
+    // Only one of the two documents.
+    await assertFails(setDoc(doc(db, 'usernames/lonely'), { uid: OTHER, createdAt: serverTimestamp() }));
+    await assertFails(setDoc(doc(db, `public/${OTHER}`), profile({ username: 'lonely' })));
+    // A username for someone else, or a profile pointing to another username.
+    await assertFails(claim(db, OTHER, 'stolen', OWNER));
+    await assertFails(claim(db, OTHER, 'mine', OTHER, profile({ username: 'other' })));
+    // A second username.
+    await assertSucceeds(claim(db, OTHER, 'first'));
+    await assertFails(claim(db, OTHER, 'second'));
+  });
+
+  it('keeps the profile owner-only, without extra fields or a new username', async () => {
+    await claim(as(OWNER), OWNER, 'reader');
+    const db = as(OWNER);
+    await assertSucceeds(updateDoc(doc(db, `public/${OWNER}`), { displayName: 'New name', photoURL: 'https://p.example/a.jpg' }));
+    await assertFails(updateDoc(doc(db, `public/${OWNER}`), { username: 'renamed' }));
+    await assertFails(updateDoc(doc(db, `public/${OWNER}`), { email: 'reader@example.com' }));
+    await assertFails(updateDoc(doc(as(OTHER), `public/${OWNER}`), { displayName: 'Hacked' }));
+    await assertFails(updateDoc(doc(db, 'usernames/reader'), { uid: OTHER }));
+    await assertFails(deleteDoc(doc(db, 'usernames/reader')));
+    await assertFails(deleteDoc(doc(db, `public/${OWNER}`)));
+  });
+});
+
+describe('follows/{followerUid}_{followedUid}', () => {
+  const THIRD = 'third-uid';
+  const follow = (follower: string, followed: string, overrides: Record<string, unknown> = {}) => ({
+    followerUid: follower,
+    followedUid: followed,
+    createdAt: serverTimestamp(),
+    ...overrides,
+  });
+  const followPath = (follower: string, followed: string) => `follows/${follower}_${followed}`;
+
+  beforeEach(async () => {
+    for (const [uid, username] of [
+      [OWNER, 'owner'],
+      [OTHER, 'other'],
+    ]) {
+      await seed(`usernames/${username}`, { uid, createdAt: Timestamp.now() });
+      await seed(`public/${uid}`, { username, displayName: null, photoURL: null });
+    }
+  });
+
+  it('lets a user follow another public profile, readable and countable by signed-in users', async () => {
+    await assertSucceeds(setDoc(doc(as(OWNER), followPath(OWNER, OTHER)), follow(OWNER, OTHER)));
+    await assertSucceeds(getDoc(doc(as(THIRD), followPath(OWNER, OTHER))));
+    await assertSucceeds(getDocs(query(collection(as(THIRD), 'follows'), where('followedUid', '==', OTHER))));
+    await assertFails(getDoc(doc(anonymous(), followPath(OWNER, OTHER))));
+  });
+
+  it('only between two public profiles, never yourself', async () => {
+    // THIRD has no public profile: can't follow, can't be followed.
+    await assertFails(setDoc(doc(as(THIRD), followPath(THIRD, OTHER)), follow(THIRD, OTHER)));
+    await assertFails(setDoc(doc(as(OWNER), followPath(OWNER, THIRD)), follow(OWNER, THIRD)));
+    await assertFails(setDoc(doc(as(OWNER), followPath(OWNER, OWNER)), follow(OWNER, OWNER)));
+  });
+
+  it('only as yourself, with the id matching the pair and no extra fields', async () => {
+    await assertFails(setDoc(doc(as(OTHER), followPath(OWNER, OTHER)), follow(OWNER, OTHER)));
+    await assertFails(setDoc(doc(as(OWNER), 'follows/whatever'), follow(OWNER, OTHER)));
+    await assertFails(setDoc(doc(as(OWNER), followPath(OWNER, OTHER)), follow(OWNER, OTHER, { note: 'hi' })));
+    await assertFails(
+      setDoc(doc(as(OWNER), followPath(OWNER, OTHER)), follow(OWNER, OTHER, { createdAt: Timestamp.fromMillis(0) })),
+    );
+  });
+
+  it('can be removed only by the follower and never edited', async () => {
+    await seed(followPath(OWNER, OTHER), { followerUid: OWNER, followedUid: OTHER, createdAt: Timestamp.now() });
+    await assertFails(updateDoc(doc(as(OWNER), followPath(OWNER, OTHER)), { followedUid: THIRD }));
+    await assertFails(deleteDoc(doc(as(OTHER), followPath(OWNER, OTHER))));
+    await assertSucceeds(deleteDoc(doc(as(OWNER), followPath(OWNER, OTHER))));
+  });
+});
+
+describe('public ratings listing', () => {
+  it('lets signed-in users list a profile’s public ratings, newest first', async () => {
+    await seed(`public/${OWNER}/ratings/${BOOK}`, { ...publicCopy(), ratedAt: Timestamp.now() });
+    await assertSucceeds(
+      getDocs(query(collection(as(OTHER), `public/${OWNER}/ratings`), orderBy('ratedAt', 'desc'), limit(20))),
+    );
+    await assertFails(getDocs(collection(anonymous(), `public/${OWNER}/ratings`)));
+  });
+});
+
 describe('everything else', () => {
   it('is closed by default', async () => {
-    await assertFails(setDoc(doc(as(OWNER), `public/${OWNER}`), { displayName: 'Reader' }));
     await assertFails(setDoc(doc(as(OWNER), 'anything/else'), { a: 1 }));
     await assertFails(getDoc(doc(as(OWNER), 'anything/else')));
   });

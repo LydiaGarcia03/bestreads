@@ -77,6 +77,8 @@
     }
   },
   "home": {
+    "sideColumn": "Friends and stats",
+    "friends": { "title": "Friends", "seeAll": "See all" },
     "currentlyReading": "Currently reading",
     "notReading": "You're not reading anything right now. Find a book with the search bar and mark it as “Currently reading”.",
     "pageOf": "Page {{page}} of {{total}} · {{percent}}%",
@@ -312,6 +314,75 @@
     },
     "languageSection": "Language",
     "account": "Account"
+  },
+  "social": {
+    "profileSection": "Public profile",
+    "intro": "Choose a @username so friends can find and follow you. They'll see your name, photo and the ratings you make public. Everything else stays private.",
+    "usernameLabel": "Username",
+    "usernameHint": "{{min}}–{{max}} characters: lowercase letters, numbers and _. It can't be changed later.",
+    "claim": "Choose username",
+    "claiming": "Saving…",
+    "yourUsername": "Your username",
+    "publicHint": "Friends see your name, photo and the ratings you make public.",
+    "loading": "Loading your public profile…",
+    "loadError": "Couldn't load your public profile.",
+    "retry": "Try again",
+    "viewProfile": "View your public profile",
+    "needUsername": "Choose your own username to follow people.",
+    "chooseUsernameLink": "Choose username",
+    "follow": "Follow",
+    "followingButton": "Following",
+    "followError": "Couldn't update. Try again.",
+    "find": {
+      "title": "Find people",
+      "label": "Their username",
+      "submit": "Find"
+    },
+    "feed": {
+      "title": "Friends' ratings",
+      "loading": "Loading your friends' ratings…",
+      "error": "Couldn't load your friends' ratings.",
+      "empty": "No ratings yet. Follow people by @username to see the ratings they make public."
+    },
+    "people": {
+      "following": "Following",
+      "followers": "Followers",
+      "loading": "Loading…",
+      "error": "Couldn't load this list.",
+      "noFollowing": "You don't follow anyone yet.",
+      "noFollowers": "Nobody follows you yet."
+    },
+    "profile": {
+      "loading": "Loading profile…",
+      "loadError": "Couldn't load this profile.",
+      "notFound": "Profile not found",
+      "notFoundHint": "Nobody uses {{username}}. Check the spelling.",
+      "backToFriends": "Go to Friends",
+      "followers_zero": "0 followers",
+      "followers_one": "{{count}} follower",
+      "followers_other": "{{count}} followers",
+      "following_zero": "0 following",
+      "following_one": "{{count}} following",
+      "following_other": "{{count}} following",
+      "you": "This is your public profile.",
+      "ratings": "Public ratings",
+      "loadingRatings": "Loading ratings…",
+      "ratingsError": "Couldn't load the ratings.",
+      "noRatings": "No public ratings yet.",
+      "loadMore": "Load more",
+      "loadingMore": "Loading…",
+      "ratedOn": "Rated on {{date}}"
+    },
+    "errors": {
+      "empty": "Type a username.",
+      "tooShort": "Use at least {{min}} characters.",
+      "tooLong": "Use at most {{max}} characters.",
+      "invalidCharacters": "Use only lowercase letters, numbers and _.",
+      "reserved": "This username is reserved. Try another one.",
+      "taken": "Someone already has this username. Try another one.",
+      "alreadySet": "You already have a username.",
+      "saveFailed": "Couldn't save your username. Try again."
+    }
   },
   "auth": {
     "intro": "Everything you record stays private. Only the ratings you choose to share are public.",

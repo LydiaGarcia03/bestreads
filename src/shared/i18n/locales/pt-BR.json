@@ -77,6 +77,8 @@
     }
   },
   "home": {
+    "sideColumn": "Amigos e estatísticas",
+    "friends": { "title": "Amigos", "seeAll": "Ver tudo" },
     "currentlyReading": "Lendo agora",
     "notReading": "Você não está lendo nada agora. Encontre um livro na barra de busca e marque como “Lendo agora”.",
     "pageOf": "Página {{page}} de {{total}} · {{percent}}%",
@@ -312,6 +314,75 @@
     },
     "languageSection": "Idioma",
     "account": "Conta"
+  },
+  "social": {
+    "profileSection": "Perfil público",
+    "intro": "Escolha um @usuário para que seus amigos encontrem e sigam você. Eles verão seu nome, sua foto e as avaliações que você tornar públicas. Todo o resto continua privado.",
+    "usernameLabel": "Nome de usuário",
+    "usernameHint": "De {{min}} a {{max}} caracteres: letras minúsculas, números e _. Não dá para mudar depois.",
+    "claim": "Escolher nome de usuário",
+    "claiming": "Salvando…",
+    "yourUsername": "Seu nome de usuário",
+    "publicHint": "Seus amigos veem seu nome, sua foto e as avaliações que você torna públicas.",
+    "loading": "Carregando seu perfil público…",
+    "loadError": "Não foi possível carregar seu perfil público.",
+    "retry": "Tentar de novo",
+    "viewProfile": "Ver seu perfil público",
+    "needUsername": "Escolha seu nome de usuário para seguir pessoas.",
+    "chooseUsernameLink": "Escolher nome de usuário",
+    "follow": "Seguir",
+    "followingButton": "Seguindo",
+    "followError": "Não foi possível atualizar. Tente de novo.",
+    "find": {
+      "title": "Encontrar pessoas",
+      "label": "Username da pessoa",
+      "submit": "Buscar"
+    },
+    "feed": {
+      "title": "Avaliações dos amigos",
+      "loading": "Carregando as avaliações dos seus amigos…",
+      "error": "Não foi possível carregar as avaliações dos seus amigos.",
+      "empty": "Nenhuma avaliação ainda. Siga pessoas pelo @username para ver as avaliações que elas tornam públicas."
+    },
+    "people": {
+      "following": "Seguindo",
+      "followers": "Seguidores",
+      "loading": "Carregando…",
+      "error": "Não foi possível carregar esta lista.",
+      "noFollowing": "Você ainda não segue ninguém.",
+      "noFollowers": "Ninguém segue você ainda."
+    },
+    "profile": {
+      "loading": "Carregando perfil…",
+      "loadError": "Não foi possível carregar este perfil.",
+      "notFound": "Perfil não encontrado",
+      "notFoundHint": "Ninguém usa {{username}}. Confira como está escrito.",
+      "backToFriends": "Ir para Amigos",
+      "followers_zero": "0 seguidores",
+      "followers_one": "{{count}} seguidor",
+      "followers_other": "{{count}} seguidores",
+      "following_zero": "seguindo 0",
+      "following_one": "seguindo {{count}}",
+      "following_other": "seguindo {{count}}",
+      "you": "Este é o seu perfil público.",
+      "ratings": "Avaliações públicas",
+      "loadingRatings": "Carregando avaliações…",
+      "ratingsError": "Não foi possível carregar as avaliações.",
+      "noRatings": "Nenhuma avaliação pública ainda.",
+      "loadMore": "Carregar mais",
+      "loadingMore": "Carregando…",
+      "ratedOn": "Avaliado em {{date}}"
+    },
+    "errors": {
+      "empty": "Digite um nome de usuário.",
+      "tooShort": "Use pelo menos {{min}} caracteres.",
+      "tooLong": "Use no máximo {{max}} caracteres.",
+      "invalidCharacters": "Use só letras minúsculas, números e _.",
+      "reserved": "Este nome de usuário é reservado. Tente outro.",
+      "taken": "Alguém já usa este nome de usuário. Tente outro.",
+      "alreadySet": "Você já tem um nome de usuário.",
+      "saveFailed": "Não foi possível salvar seu nome de usuário. Tente de novo."
+    }
   },
   "auth": {
     "intro": "Tudo o que você registra é privado. Só as notas que você escolher compartilhar ficam públicas.",

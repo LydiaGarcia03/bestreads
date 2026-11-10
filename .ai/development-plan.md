@@ -5,7 +5,7 @@ Each phase lists its tasks and a "Done when" checklist. Mark tasks with `[x]` as
 
 Status legend: `[ ]` not started · `[~]` in progress · `[x]` done
 
-Current phase: **Phase 6 — Social** (next; Phases 2–5 are done and checked at 390px in the dark theme; the light theme check is pending)
+Current phase: **Phase 6 — Social** (6.1 done; 6.2 and 6.3 built, waiting for a browser check with two accounts; 6.4 moderation next; Phases 2–5 are done and checked at 390px in the dark theme; the light theme check is pending)
 
 ---
 
@@ -163,12 +163,33 @@ Only for books with status "Reading"; opt-in via "Add reading plan".
 
 ## Phase 6 — Social
 
-- [ ] Unique `@username` via `usernames/{username}` (create once)
-- [ ] `public/{uid}` profile (display name, username, photo) and public profile route
-- [ ] Follow / unfollow (`follows/{followerUid}_{followedUid}`)
-- [ ] Friends screen and public profile with public ratings
-- [ ] Feed of followed users' public ratings
-- [ ] `firestore.rules` for usernames, public profile and follows
+Delivered in sub-steps, each one tested and checked in the browser before the next.
+
+Decisions:
+- A username is 3–20 characters: lowercase letters, digits and `_` (typed with or without `@`, stored lowercase); a few names are reserved. It is chosen once and can't be changed from the app.
+- The username lives in `public/{uid}` (not in `users/{uid}`): having a `public/{uid}` document means having a public profile. `usernames/{username}` and `public/{uid}` are created in one transaction, and the rules check each against the other.
+- People are found by their exact `@username` (no prefix search), so the list of usernames can't be read by anyone.
+- The feed reads each followed user's latest public ratings (one small query per followed user), since a public rating has no owner field for a collection-group query.
+
+### 6.1 Username and public profile
+- [x] `usernames/{username}` + `public/{uid}` (display name, username, photo), claimed together; `firestore.rules` and rules tests
+- [x] "Public profile" section in Settings and on the Friends screen (choose a username, or see it)
+- [x] Display name and photo changes copied to `public/{uid}` on login
+- [x] Publish the updated `firestore.rules` in the Firebase console
+- [x] Checked in the browser while signed in (choosing a username works end to end)
+
+### 6.2 Public profile screen
+- [x] Public profile route `/u/:username` with the user's public ratings (paginated, 20 per page, "Load more")
+- [x] Follow / unfollow (`follows/{followerUid}_{followedUid}`) with rules and tests; following needs a username of one's own
+- [x] Publish the updated `firestore.rules` in the Firebase console
+- [ ] Checked in the browser while signed in (two accounts: follow, unfollow, ratings list)
+
+### 6.3 Friends
+- [x] Friends screen: find by `@username`, people you follow, followers (lists capped at 100)
+- [x] Feed of followed users' public ratings (Friends screen; Home desktop side column, not rendered on phones)
+- [ ] Checked in the browser while signed in (two accounts: feed, lists, Home side column at 1280px; Friends at 390px)
+
+### 6.4 Moderation
 - [ ] Admin moderation of public data (usernames, public profiles, public ratings) using `isAdmin()` from `firestore.rules`; admins never get access to `users/{uid}/...`
 
 ---

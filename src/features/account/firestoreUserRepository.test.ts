@@ -51,13 +51,35 @@ describe('createFirestoreUserRepository', () => {
   });
 
   it('updates only the profile fields that changed', async () => {
-    mocked.getDoc.mockResolvedValue(
-      snapshot({ displayName: null, photoURL: null, preferences: { theme: 'light', language: 'en' } }),
-    );
+    mocked.getDoc
+      .mockResolvedValueOnce(snapshot({ displayName: null, photoURL: null, preferences: { theme: 'light', language: 'en' } }))
+      .mockResolvedValueOnce(snapshot(undefined));
+
+    await createFirestoreUserRepository(db).ensureUser(USER, LOCAL);
+
+    expect(mocked.updateDoc).toHaveBeenCalledOnce();
+    expect(mocked.updateDoc).toHaveBeenCalledWith({ path: 'users/u1' }, { displayName: 'Ana' });
+  });
+
+  it('copies profile changes to the public profile when there is one', async () => {
+    mocked.getDoc
+      .mockResolvedValueOnce(snapshot({ displayName: 'Old', photoURL: null, preferences: { theme: 'light', language: 'en' } }))
+      .mockResolvedValueOnce(snapshot({ username: 'ana', displayName: 'Old', photoURL: null }));
 
     await createFirestoreUserRepository(db).ensureUser(USER, LOCAL);
 
     expect(mocked.updateDoc).toHaveBeenCalledWith({ path: 'users/u1' }, { displayName: 'Ana' });
+    expect(mocked.updateDoc).toHaveBeenCalledWith({ path: 'public/u1' }, { displayName: 'Ana' });
+  });
+
+  it('reads the public profile only when the account profile changed', async () => {
+    mocked.getDoc.mockResolvedValueOnce(
+      snapshot({ displayName: 'Ana', photoURL: null, preferences: { theme: 'light', language: 'en' } }),
+    );
+
+    await createFirestoreUserRepository(db).ensureUser(USER, LOCAL);
+
+    expect(mocked.getDoc).toHaveBeenCalledOnce();
   });
 
   it('saves preference changes as nested field updates', async () => {

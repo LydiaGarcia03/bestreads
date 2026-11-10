@@ -1,9 +1,10 @@
 import { useTranslation } from 'react-i18next';
 import { AccountDetails } from '@/features/auth';
 import { LanguageSelect, ThemeSelector } from '@/features/preferences';
+import { PublicProfileCard } from '@/features/social/lazy';
 import { PageHeading } from '@/shared/ui/PageHeading';
 
-/** Settings screen: account, appearance and language. */
+/** Settings screen: account, public profile, appearance and language. */
 export function SettingsPage() {
   const { t } = useTranslation();
 
@@ -16,6 +17,13 @@ export function SettingsPage() {
           {t('settings.account')}
         </h2>
         <AccountDetails />
+      </section>
+
+      <section aria-labelledby="settings-public-profile" className="flex flex-col gap-3">
+        <h2 id="settings-public-profile" className="text-sm font-bold tracking-wide text-fg-muted uppercase">
+          {t('social.profileSection')}
+        </h2>
+        <PublicProfileCard />
       </section>
 
       <section aria-labelledby="settings-appearance" className="flex flex-col gap-3">

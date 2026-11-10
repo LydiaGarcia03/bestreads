@@ -2,7 +2,17 @@ import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Route, Routes } from 'react-router-dom';
 import type { LibraryBook } from '@/features/books';
-import { createTestBook, createTestLibraryBook, FakeCatalog, FakeLibraryRepository, TEST_USER } from '@/test/fakes';
+import { HOME_FEED_SIZE } from '@/features/social/feed';
+import {
+  createTestBook,
+  createTestLibraryBook,
+  createTestProfile,
+  createTestPublicRating,
+  FakeCatalog,
+  FakeLibraryRepository,
+  FakeSocialRepository,
+  TEST_USER,
+} from '@/test/fakes';
 import { renderWithProviders, type RenderWithProvidersOptions } from '@/test/renderWithProviders';
 import { HomePage } from './HomePage';
 
@@ -15,8 +25,20 @@ const popularCatalog = () =>
     createTestBook({ id: 'ol-OL2W', title: 'O Alquimista', authors: ['Paulo Coelho'] }),
   ]);
 
-/** Top-level sections in page order, by their headings. */
-const sectionOrder = () => screen.getAllByRole('region').map((region) => region.querySelector('h2')?.textContent);
+/** Main column sections in page order, by their headings. */
+const sectionOrder = () =>
+  screen
+    .getAllByRole('region')
+    .filter((region) => !region.closest('aside'))
+    .map((region) => region.querySelector('h2')?.textContent);
+
+/** Makes `useMediaQuery` report a phone (no match for the desktop query) or a desktop. */
+function stubScreen(isDesktop: boolean) {
+  vi.stubGlobal(
+    'matchMedia',
+    vi.fn(() => ({ matches: isDesktop, addEventListener: () => {}, removeEventListener: () => {} })),
+  );
+}
 
 function renderHome(books: LibraryBook[], options: RenderWithProvidersOptions = {}) {
   const library = new FakeLibraryRepository(books, [{ id: 'fav', name: 'Favorites', order: 1 }]);
@@ -174,6 +196,38 @@ describe('HomePage', () => {
       expect(await within(popular).findByRole('alert')).toHaveTextContent("Couldn't load popular books.");
       await user.click(within(popular).getByRole('button', { name: 'Try again' }));
       expect(await within(popular).findByRole('link', { name: /Atomic Habits/ })).toBeInTheDocument();
+    });
+  });
+
+  describe('friends side column', () => {
+    afterEach(() => vi.unstubAllGlobals());
+
+    it("shows followed users' latest ratings on desktop, linking to Friends", async () => {
+      stubScreen(true);
+      const friend = createTestProfile({ uid: 'ana-uid', username: 'ana' });
+      const social = new FakeSocialRepository([friend]);
+      social.follows.add(`${TEST_USER.uid}_${friend.uid}`);
+      social.ratings.set(
+        friend.uid,
+        Array.from({ length: 8 }, (_, index) => createTestPublicRating({ bookId: `b${index}`, title: `Book ${index}` })),
+      );
+      renderHome([], { social });
+
+      const side = screen.getByRole('complementary', { name: 'Friends and stats' });
+      const friends = within(side).getByRole('region', { name: 'Friends' });
+      expect(await within(friends).findAllByRole('article')).toHaveLength(HOME_FEED_SIZE);
+      expect(within(friends).getByRole('link', { name: 'Book 0' })).toHaveAttribute('href', '/book/b0');
+      expect(within(friends).getByRole('link', { name: 'See all' })).toHaveAttribute('href', '/friends');
+    });
+
+    it('is not rendered (nor read) on phones', async () => {
+      stubScreen(false);
+      const social = new FakeSocialRepository();
+      renderHome([], { social });
+
+      await currentlyReading();
+      expect(screen.queryByRole('complementary')).not.toBeInTheDocument();
+      expect(social.listFollowing).not.toHaveBeenCalled();
     });
   });
 

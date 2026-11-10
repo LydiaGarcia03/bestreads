@@ -91,16 +91,16 @@ Core features:
 
 | Path | Content | Read | Write |
 | --- | --- | --- | --- |
-| `users/{uid}` | display name, photo, preferences (`theme`, `language`), `createdAt`; username from Phase 6 | owner | owner |
+| `users/{uid}` | display name, photo, preferences (`theme`, `language`), `createdAt` | owner | owner |
 | `users/{uid}/books/{bookId}` | title, author, API cover, pages, ISBN, description, status, shelves, rating, progress, series + volume, reads (start/finish) | owner | owner |
 | `users/{uid}/books/{bookId}/private/review` | review text | owner | owner |
 | `users/{uid}/books/{bookId}/private/cover` | personal cover (base64) | owner | owner |
 | `users/{uid}/shelves/{shelfId}` | custom shelf name and order | owner | owner |
 | `admins/{uid}` | admin marker (`createdAt`), created only in the Firebase console | owner | nobody (console only) |
-| `usernames/{username}` | owning `uid` (enforces unique usernames) | signed in | owner, create once |
-| `public/{uid}` | display name, username, photo | signed in | owner |
+| `usernames/{username}` | owning `uid`, `createdAt` (enforces unique usernames) | signed in, one at a time (no listing) | owner, create once, together with `public/{uid}`; admin delete |
+| `public/{uid}` | username (fixed), display name, photo; existing = the user has a public profile | signed in, one at a time (no listing) | owner (username never changes); admin delete |
 | `public/{uid}/ratings/{bookId}` | title, author, API cover, rating, date | signed in | owner |
-| `follows/{followerUid}_{followedUid}` | follow relation + date | signed in | follower |
+| `follows/{followerUid}_{followedUid}` | `followerUid`, `followedUid`, `createdAt` | signed in | follower creates (both users need a public profile, never yourself) and deletes; no edits |
 
 `bookId` = Google Books volume id, or `ol-<id>` for Open Library, so the same book is never added twice.
 

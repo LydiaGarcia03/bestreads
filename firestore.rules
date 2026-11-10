@@ -227,6 +227,84 @@ service cloud.firestore {
       allow delete: if isOwner(uid);
     }
 
+    // A username (src/features/social/username.ts): USERNAME_LIMITS, the allowed characters and
+    // RESERVED_USERNAMES.
+    function isValidUsername(username) {
+      return username is string
+        && username.matches('^[a-z0-9_]{3,20}$')
+        && !(username in ['admin', 'administrator', 'bestreads', 'help', 'moderator', 'official',
+          'root', 'support', 'system']);
+    }
+
+    function publicProfilePath(uid) {
+      return /databases/$(database)/documents/public/$(uid);
+    }
+
+    // usernames/{username}: who owns each username. Readable one at a time (finding someone by their
+    // exact @username), never listed. Created once, in the same transaction as the owner's public
+    // profile, and only by someone without one yet, so nobody gets two names or someone else's.
+    match /usernames/{username} {
+      allow get: if request.auth != null;
+      allow create: if request.auth != null
+        && isValidUsername(username)
+        && request.resource.data.keys().hasOnly(['uid', 'createdAt'])
+        && request.resource.data.keys().hasAll(['uid', 'createdAt'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.createdAt == request.time
+        && !exists(publicProfilePath(request.auth.uid))
+        && getAfter(publicProfilePath(request.auth.uid)).data.username == username;
+      allow update: if false;
+      // Moderation only (Phase 6.4).
+      allow delete: if isAdmin();
+    }
+
+    // public/{uid}: the public profile (src/features/social/publicProfile.ts). Nothing from users/{uid}/...
+    // except the display name and photo the user already shows as their account.
+    function isValidPublicProfile(data) {
+      return data.keys().hasOnly(['username', 'displayName', 'photoURL'])
+        && data.keys().hasAll(['username', 'displayName', 'photoURL'])
+        && isValidUsername(data.username)
+        && isNullableString(data.displayName, 100)
+        && isNullableString(data.photoURL, 2048);
+    }
+
+    // Readable one at a time by signed-in users, never listed. Its username can't change and must be
+    // reserved for this user in the same write.
+    match /public/{uid} {
+      allow get: if request.auth != null;
+      allow create: if isOwner(uid)
+        && isValidPublicProfile(request.resource.data)
+        && getAfter(/databases/$(database)/documents/usernames/$(request.resource.data.username)).data.uid == uid;
+      allow update: if isOwner(uid)
+        && isValidPublicProfile(request.resource.data)
+        && request.resource.data.username == resource.data.username;
+      // Moderation only (Phase 6.4).
+      allow delete: if isAdmin();
+    }
+
+    // follows/{followerUid}_{followedUid} (src/features/social/follows.ts): who follows whom. Readable by
+    // signed-in users (follower and following counts and lists). Only between two public profiles,
+    // never yourself, written and removed only by the follower.
+    function isValidFollow(followId, data) {
+      return data.keys().hasOnly(['followerUid', 'followedUid', 'createdAt'])
+        && data.keys().hasAll(['followerUid', 'followedUid', 'createdAt'])
+        && data.followerUid == request.auth.uid
+        && data.followedUid is string
+        && data.followedUid != data.followerUid
+        && followId == data.followerUid + '_' + data.followedUid
+        && data.createdAt == request.time;
+    }
+
+    match /follows/{followId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null
+        && isValidFollow(followId, request.resource.data)
+        && exists(publicProfilePath(request.auth.uid))
+        && exists(publicProfilePath(request.resource.data.followedUid));
+      allow update: if false;
+      allow delete: if request.auth != null && resource.data.followerUid == request.auth.uid;
+    }
+
     // admins/{uid}: a user can check whether they are an admin; nobody can write from the app.
     match /admins/{uid} {
       allow read: if isOwner(uid);

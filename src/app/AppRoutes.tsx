@@ -17,6 +17,9 @@ const SearchPage = lazy(() => import('@/features/search/SearchPage').then((m) =>
 const BookPage = lazy(() => import('@/features/books/BookPage').then((m) => ({ default: m.BookPage })));
 const ShelvesPage = lazy(() => import('@/features/shelves/ShelvesPage').then((m) => ({ default: m.ShelvesPage })));
 const FriendsPage = lazy(() => import('@/features/friends/FriendsPage').then((m) => ({ default: m.FriendsPage })));
+const PublicProfilePage = lazy(() =>
+  import('@/features/social/PublicProfilePage').then((m) => ({ default: m.PublicProfilePage })),
+);
 const YearPage = lazy(() => import('@/features/year/YearPage').then((m) => ({ default: m.YearPage })));
 const SettingsPage = lazy(() => import('@/features/settings/SettingsPage').then((m) => ({ default: m.SettingsPage })));
 
@@ -35,6 +38,7 @@ export function AppRoutes() {
           <Route path={PATHS.book} element={<BookPage />} />
           <Route path={PATHS.shelves} element={<ShelvesPage />} />
           <Route path={PATHS.friends} element={<FriendsPage />} />
+          <Route path={PATHS.profile} element={<PublicProfilePage />} />
           <Route path={PATHS.year} element={<YearPage />} />
           <Route path={PATHS.settings} element={<SettingsPage />} />
           <Route path="*" element={<NotFoundPage />} />

@@ -10,6 +10,8 @@ import {
 } from './userDocument';
 
 const USERS_COLLECTION = 'users';
+/** The public profile (`public/{uid}`), which repeats the display name and photo. */
+const PUBLIC_COLLECTION = 'public';
 
 /** Firestore implementation of `UserRepository`. Loaded on demand (see `services.ts`). */
 export function createFirestoreUserRepository(db: Firestore = getFirestore(getFirebaseApp())): UserRepository {
@@ -28,7 +30,12 @@ export function createFirestoreUserRepository(db: Firestore = getFirestore(getFi
 
       const data = snapshot.data();
       const changes = profileChanges(readStoredProfile(data), profile);
-      if (changes) await updateDoc(ref, changes);
+      if (changes) {
+        await updateDoc(ref, changes);
+        // Profile changes are rare, so the extra read happens only then; no public profile, nothing to copy.
+        const publicRef = doc(db, PUBLIC_COLLECTION, user.uid);
+        if ((await getDoc(publicRef)).exists()) await updateDoc(publicRef, changes);
+      }
       return readStoredPreferences(data.preferences, localPreferences);
     },
 
