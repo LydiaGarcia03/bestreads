@@ -5,7 +5,7 @@ Each phase lists its tasks and a "Done when" checklist. Mark tasks with `[x]` as
 
 Status legend: `[ ]` not started · `[~]` in progress · `[x]` done
 
-Current phase: **Phase 2 — My shelf** (in progress)
+Current phase: **Phase 4 — Series** (next; Phases 2 and 3 are done except the 390px / light theme check on a real phone or DevTools)
 
 ---
 
@@ -127,13 +127,15 @@ Done when:
 
 Goal: private content and verified security rules.
 
-- [ ] Review: full-screen editor on mobile, inline editor on desktop; stored in `private/review`
-- [ ] Personal cover upload: browser resize (~400px, WebP/JPEG, ≤ ~150 KB), base64 in `private/cover`
-- [ ] Cover display priority: personal cover > API cover > placeholder
-- [ ] Firestore rules tests with the emulator (dependency to be confirmed with the user)
+- [x] Review: full-screen editor on mobile, inline editor on desktop; stored in `private/review` (up to 20,000 characters, owner only, only for books in the library; removing a book deletes it)
+- [x] Publish the updated `firestore.rules` (private review and cover) in the Firebase console; removing a book needs it too, since it now deletes the private documents
+- [x] Personal cover upload: browser resize (~400px, WebP/JPEG, ≤ ~150 KB), base64 in `private/cover`; a dialog takes a dropped, pasted or chosen image, previews it and saves it; the cover can be removed
+- [x] Cover display priority: personal cover > API cover > placeholder (book page, shelves, Home cards; loaded only for books flagged `hasPersonalCover`)
+- [x] Publish the updated `firestore.rules` (optional `hasPersonalCover` on books)
+- [x] Firestore rules tests with the emulator: `firebase-tools` + `@firebase/rules-unit-testing` (dev only), `npm run test:rules` (project `demo-bestreads`), also run in CI before the build
 
 Done when:
-- [ ] Rules tests prove private paths are owner-only and nothing private reaches `public/...`
+- [x] Rules tests prove private paths are owner-only and nothing private reaches `public/...` (18 tests; a deliberately loosened rule makes them fail)
 
 ---
 
@@ -192,8 +194,9 @@ Only for books with status "Reading"; opt-in via "Add reading plan".
 ## Open questions
 
 - Reminder delivery for reading plans without a backend (Phase 5).
-- Firestore emulator / `@firebase/rules-unit-testing` as dev dependencies for rules tests (Phase 3). Until then, `firestore.rules` for `users/{uid}` has no automated tests.
+- ~~Firestore emulator for rules tests~~ Decided: `firebase-tools` and `@firebase/rules-unit-testing` as dev dependencies; rules tests run locally (`npm run test:rules`) and in CI.
 - `signInWithRedirect` on a domain other than `<project>.firebaseapp.com` (GitHub Pages) is affected by browser third-party storage partitioning; the redirect fallback may need an auth-domain proxy or may be dropped. Popup login is the primary flow.
 - ~~Search relevance~~ Decided: Google Books (whole words only, strong for Portuguese and new books) and Open Library (prefix on the last word, reader counts) are searched in parallel; copies of a work are merged and the list is ranked by match quality (title starts with the text or the text names an author > every word matches > other) and then popularity. A slow API is dropped at 1.5 s when the others already gave 3+ good matches, otherwise at 4 s. Goodreads-level popularity data is not available from free APIs, so very new or niche books can still rank lower than on Goodreads.
+- Search identical to Goodreads: needs Goodreads-like data (reader counts, canonical editions, series, translated titles). Free public APIs (Google Books, Open Library) get close on famous books and series but not identical. Hardcover's API has that kind of data but needs a private token, which can't ship in the frontend and would need a small proxy outside Firebase (against "no custom backend"); undecided.
 - ~~Shelves navigation icon~~ Decided: option A, a stack of three books lying down (`ShelvesIcon`); the other options stay in `docs/mocks/shelves-icon-options.html` for reference.
 - ~~Firestore bundle size~~ Decided: keep the full Firestore SDK (≈138 KB gzip, loaded after login, outside the initial bundle). `firebase/firestore/lite` is smaller but has no offline cache, which the PWA (Phase 8) needs.

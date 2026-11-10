@@ -206,7 +206,7 @@ Rules for using the mocks:
 ## Deploy
 
 - `vite.config.ts` uses `base: '/<repo>/'`.
-- `.github/workflows/deploy.yml`: `npm ci` → lint, typecheck, test → `npm run build` (repository secrets `VITE_FIREBASE_*` and `VITE_GOOGLE_BOOKS_API_KEY` as env) → `actions/upload-pages-artifact` (`dist`) → `actions/deploy-pages`. A failing check blocks the deploy.
+- `.github/workflows/deploy.yml`: `npm ci` → lint, typecheck, test, rules tests on the emulator (Java 21) → `npm run build` (repository secrets `VITE_FIREBASE_*` and `VITE_GOOGLE_BOOKS_API_KEY` as env) → `actions/upload-pages-artifact` (`dist`) → `actions/deploy-pages`. A failing check blocks the deploy.
 - Firebase Auth must list `<user>.github.io` under Authorized domains.
 - If the Google popup login fails on mobile, use `signInWithRedirect`.
 
@@ -219,9 +219,10 @@ npm run build      # production build to dist/
 npm run lint       # ESLint
 npm run typecheck  # tsc --noEmit
 npm test           # Vitest
+npm run test:rules # Firestore rules tests on the emulator (needs Java 21+; project demo-bestreads)
 ```
 
-Run `lint`, `typecheck` and `test` before saying a task is done.
+Run `lint`, `typecheck` and `test` before saying a task is done, and `test:rules` whenever `firestore.rules` changes (every rule change comes with a test in `tests/rules/`).
 
 ## Roadmap
 
