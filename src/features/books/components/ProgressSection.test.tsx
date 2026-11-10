@@ -72,15 +72,15 @@ describe('ProgressSection', () => {
     const field = screen.getByRole('textbox', { name: "I'm on page" });
     await user.type(field, '500{Enter}');
 
-    expect(screen.getByRole('alert')).toHaveTextContent('This book has 444 pages.');
+    expect(within(await section()).getByRole('alert')).toHaveTextContent('This book has 444 pages.');
     expect(field).toHaveAttribute('aria-invalid', 'true');
     await user.clear(field);
     await user.type(field, 'abc{Enter}');
-    expect(screen.getByRole('alert')).toHaveTextContent('Enter a whole number.');
+    expect(within(await section()).getByRole('alert')).toHaveTextContent('Enter a whole number.');
     expect(library.updateBook).not.toHaveBeenCalled();
 
     await user.click(screen.getByRole('button', { name: 'Cancel' }));
-    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    expect(within(await section()).queryByRole('textbox')).not.toBeInTheDocument();
   });
 
   it('offers to mark the book as read once finished', async () => {

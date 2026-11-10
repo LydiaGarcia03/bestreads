@@ -16,5 +16,6 @@ export { LibraryContextProvider } from './LibraryContextProvider';
 export { isValidRating } from './rating';
 export { loadFirestoreLibraryRepository } from './services';
 export type { LibraryBookPatch } from './reads';
+export type { Review } from './review';
 export type { Shelf, ShelfFilter, ShelfNameError } from './shelves';
 export type { LibraryRepository, ListBooksOptions, RatingChange } from './types';

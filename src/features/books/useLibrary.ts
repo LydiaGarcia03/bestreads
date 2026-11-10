@@ -12,6 +12,8 @@ export const libraryQueryKeys = {
   /** Books on a shelf; `shelf` is a `shelfKey`. */
   list: (uid: string, shelf: string) => ['library', uid, 'list', shelf] as const,
   count: (uid: string, shelf: string) => ['library', uid, 'count', shelf] as const,
+  review: (uid: string, bookId: string) => ['library', uid, 'review', bookId] as const,
+  cover: (uid: string, bookId: string) => ['library', uid, 'cover', bookId] as const,
   shelves: (uid: string) => ['library', uid, 'shelves'] as const,
 };
 
@@ -73,7 +75,7 @@ const isShelfList = (query: { queryKey: readonly unknown[] }) => query.queryKey[
  * Shows a change to a book at once, on its page and in every cached shelf list (Home cards, shelves),
  * and returns how to undo it if the write fails. Pending reads are cancelled so they can't overwrite it.
  */
-async function applyOptimistically(queryClient: QueryClient, uid: string, bookId: string, change: Partial<LibraryBook>) {
+export async function applyOptimistically(queryClient: QueryClient, uid: string, bookId: string, change: Partial<LibraryBook>) {
   const key = libraryQueryKeys.book(uid, bookId);
   const lists = { queryKey: libraryQueryKeys.all(uid), predicate: isShelfList };
   await Promise.all([queryClient.cancelQueries({ queryKey: key }), queryClient.cancelQueries(lists)]);

@@ -1,6 +1,7 @@
 import type { CatalogBook } from '@/features/catalog';
 import type { LibraryBook, ReadingStatus } from './library';
 import type { LibraryBookPatch } from './reads';
+import type { Review } from './review';
 import type { Shelf, ShelfFilter } from './shelves';
 
 export interface RatingChange {
@@ -28,8 +29,16 @@ export interface LibraryRepository {
    * published (`publicRatingOf`) when public and rated, deleted otherwise.
    */
   updateRating(uid: string, book: LibraryBook, change: RatingChange): Promise<void>;
-  /** Removes the book and its public rating copy, if any. */
+  /** Removes the book with its private data (review, personal cover) and its public rating copy, if any. */
   removeBook(uid: string, bookId: string): Promise<void>;
+  /** The owner's review of a book in the library, or `null` when there is none. */
+  getReview(uid: string, bookId: string): Promise<Review | null>;
+  /** Saves the review; an empty text deletes it. */
+  saveReview(uid: string, bookId: string, text: string): Promise<void>;
+  /** The owner's cover photo as a data URL, or `null`. */
+  getPersonalCover(uid: string, bookId: string): Promise<string | null>;
+  /** Saves (or with `null` removes) the cover photo and sets `hasPersonalCover`, in one write. */
+  savePersonalCover(uid: string, bookId: string, dataUrl: string | null): Promise<void>;
   /** Books on a shelf, most recently updated first, up to `limit`. */
   listBooks(uid: string, options: ListBooksOptions): Promise<LibraryBook[]>;
   /** How many books are on a shelf. */

@@ -5,6 +5,7 @@ export type { LibraryBook, ReadingStatus, Shelf, ShelfFilter } from './index';
 export { SHELF_QUERY_PARAM, SHELVES_PATH } from './shelfPath';
 export { ShelfNameForm } from './components/ShelfNameForm';
 export { StarRating } from './components/StarRating';
+export { LibraryBookCover } from './components/LibraryBookCover';
 export { ProgressForm } from './components/ProgressSection';
 export { useUpdateBook } from './useLibrary';
 export { progressPercent } from './progress';

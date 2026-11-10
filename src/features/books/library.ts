@@ -55,6 +55,8 @@ export interface LibraryBookState {
   ratingPublic: boolean;
   progress: ReadingProgress | null;
   reads: ReadPeriod[];
+  /** The owner uploaded a cover (kept in `private/cover`); lists load it only for these books. */
+  hasPersonalCover: boolean;
 }
 
 export interface LibraryBook extends LibraryBookInfo, LibraryBookState {
@@ -103,6 +105,7 @@ export function newLibraryBookData(book: CatalogBook, status: ReadingStatus, tod
     ratingPublic: false,
     progress: null,
     reads: readsAfterStatusChange([], status, today),
+    hasPersonalCover: false,
   };
 }
 
@@ -154,6 +157,8 @@ export function readLibraryBook(id: string, data: Readonly<Record<string, unknow
     ratingPublic: data.ratingPublic === true,
     progress: readProgress(data.progress),
     reads: readReads(data.reads),
+    // Books saved before personal covers existed have no such field.
+    hasPersonalCover: data.hasPersonalCover === true,
     addedAt: data.addedAt instanceof Date ? data.addedAt : null,
     updatedAt: data.updatedAt instanceof Date ? data.updatedAt : null,
   };

@@ -112,6 +112,7 @@ describe('readLibraryBook', () => {
       ratingPublic: false,
       progress: null,
       reads: [],
+      hasPersonalCover: false,
       addedAt: null,
       updatedAt: null,
     });

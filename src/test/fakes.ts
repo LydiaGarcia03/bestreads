@@ -8,6 +8,7 @@ import type {
   ListBooksOptions,
   RatingChange,
   ReadingStatus,
+  Review,
   Shelf,
   ShelfFilter,
 } from '@/features/books';
@@ -113,6 +114,8 @@ export function createTestBook(overrides: Partial<CatalogBook> = {}): CatalogBoo
     publishedDate: '2021-05-04',
     categories: ['Fiction', 'Science Fiction'],
     popularity: 0,
+    series: null,
+    subjects: [],
     source: 'googleBooks',
     ...overrides,
   };
@@ -155,8 +158,29 @@ export class FakeLibraryRepository implements LibraryRepository {
     if (book) this.books.set(id, { ...book, ...change });
   });
 
+  readonly reviews = new Map<string, Review>();
+
   removeBook = vi.fn(async (_uid: string, bookId: string) => {
     this.books.delete(bookId);
+    this.reviews.delete(bookId);
+  });
+
+  getReview = vi.fn(async (_uid: string, bookId: string) => this.reviews.get(bookId) ?? null);
+
+  readonly covers = new Map<string, string>();
+
+  getPersonalCover = vi.fn(async (_uid: string, bookId: string) => this.covers.get(bookId) ?? null);
+
+  savePersonalCover = vi.fn(async (_uid: string, bookId: string, dataUrl: string | null) => {
+    if (dataUrl) this.covers.set(bookId, dataUrl);
+    else this.covers.delete(bookId);
+    const book = this.books.get(bookId);
+    if (book) this.books.set(bookId, { ...book, hasPersonalCover: dataUrl !== null });
+  });
+
+  saveReview = vi.fn(async (_uid: string, bookId: string, text: string) => {
+    if (text) this.reviews.set(bookId, { text, updatedAt: null });
+    else this.reviews.delete(bookId);
   });
 
   listBooks = vi.fn(async (_uid: string, { filter, limit }: ListBooksOptions) =>

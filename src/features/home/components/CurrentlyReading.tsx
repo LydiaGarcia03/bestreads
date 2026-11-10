@@ -2,7 +2,7 @@ import { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import {
-  BookCover,
+  LibraryBookCover,
   buildBookPath,
   buildShelfPath,
   ProgressForm,
@@ -77,9 +77,12 @@ function ReadingCard({ book }: { book: LibraryBook }) {
   })();
 
   return (
-    <article aria-labelledby={titleId} className="flex gap-4 rounded-md border border-border bg-surface p-3.5 lg:gap-5 lg:p-5">
+    <article
+      aria-labelledby={titleId}
+      className="flex gap-4 rounded-md border border-border bg-surface p-3.5 lg:gap-5 lg:p-5"
+    >
       <Link to={bookPath} tabIndex={-1} aria-hidden="true" className="shrink-0">
-        <BookCover src={book.coverUrl} title={book.title} className="w-[68px] lg:w-[100px]" />
+        <LibraryBookCover book={book} className="w-[68px] lg:w-[100px]" />
       </Link>
       <div className="flex min-w-0 flex-1 flex-col gap-1.5">
         <h3 id={titleId} className="line-clamp-2 text-base font-bold lg:text-[22px] lg:leading-tight">
@@ -88,7 +91,9 @@ function ReadingCard({ book }: { book: LibraryBook }) {
           </Link>
         </h3>
         {book.authors.length > 0 && (
-          <p className="line-clamp-1 text-[13px] text-fg-muted lg:text-sm">{t('books.by', { authors: book.authors.join(', ') })}</p>
+          <p className="line-clamp-1 text-[13px] text-fg-muted lg:text-sm">
+            {t('books.by', { authors: book.authors.join(', ') })}
+          </p>
         )}
 
         {isEditing ? (

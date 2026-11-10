@@ -18,7 +18,7 @@ function renderRating(book: Partial<LibraryBook> = {}, options: RenderWithProvid
 }
 
 const ratingSection = () => screen.findByRole('region', { name: 'My rating' });
-const shownValue = () => screen.getByRole('status');
+const shownValue = () => within(screen.getByRole('group', { name: /Fine-tune rating|Ajustar nota/ })).getByRole('status');
 /** Filled share of each star, from the width of its filled layer (absent = empty). */
 const starFills = () =>
   within(screen.getByRole('group', { name: 'Rating stars' }))

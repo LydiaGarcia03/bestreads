@@ -23,6 +23,7 @@ vi.mock('firebase/firestore', () => {
     limit: vi.fn((count: number) => ({ limit: count })),
     updateDoc: vi.fn(),
     addDoc: vi.fn(),
+    setDoc: vi.fn(),
     deleteDoc: vi.fn(),
     getCountFromServer: vi.fn(),
     arrayRemove: vi.fn((value: unknown) => ({ arrayRemove: value })),
@@ -117,16 +118,76 @@ describe('createFirestoreLibraryRepository', () => {
     );
   });
 
-  it('removes a book together with its public rating copy', async () => {
+  it('removes a book together with its private data and public rating copy', async () => {
     const { batch, operations } = mockBatch();
 
     await createFirestoreLibraryRepository(db).removeBook(UID, 'vol-1');
 
     expect(operations).toEqual([
-      ['delete', `users/${UID}/books/vol-1`],
+      ['delete', `users/${UID}/books/vol-1/private/review`],
+      ['delete', `users/${UID}/books/vol-1/private/cover`],
       ['delete', `public/${UID}/ratings/vol-1`],
+      ['delete', `users/${UID}/books/vol-1`],
     ]);
     expect(batch.commit).toHaveBeenCalledOnce();
+  });
+
+  describe('personal cover', () => {
+    const dataUrl = 'data:image/webp;base64,QUJD';
+
+    it('reads the cover data URL', async () => {
+      mocked.getDoc.mockResolvedValue(snapshot('cover', { dataUrl, updatedAt: null }) as never);
+      expect(await createFirestoreLibraryRepository(db).getPersonalCover(UID, 'vol-1')).toBe(dataUrl);
+      expect(mocked.doc).toHaveBeenLastCalledWith(db, 'users', UID, 'books', 'vol-1', 'private', 'cover');
+    });
+
+    it('saves the cover and flags the book in one batch, and removes both together', async () => {
+      const { batch, operations } = mockBatch();
+      const repository = createFirestoreLibraryRepository(db);
+
+      await repository.savePersonalCover(UID, 'vol-1', dataUrl);
+      await repository.savePersonalCover(UID, 'vol-1', null);
+
+      expect(operations).toEqual([
+        ['set', `users/${UID}/books/vol-1/private/cover`, { dataUrl, updatedAt: 'SERVER_TIMESTAMP' }],
+        ['update', `users/${UID}/books/vol-1`, { hasPersonalCover: true, updatedAt: 'SERVER_TIMESTAMP' }],
+        ['delete', `users/${UID}/books/vol-1/private/cover`],
+        ['update', `users/${UID}/books/vol-1`, { hasPersonalCover: false, updatedAt: 'SERVER_TIMESTAMP' }],
+      ]);
+      expect(batch.commit).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  describe('review', () => {
+    it('reads the review with its date', async () => {
+      const updatedAt = new Date('2026-11-09T12:00:00Z');
+      mocked.getDoc.mockResolvedValue(
+        snapshot('review', { text: 'Loved it.', updatedAt: new firestore.Timestamp(updatedAt as never, 0) }) as never,
+      );
+
+      const review = await createFirestoreLibraryRepository(db).getReview(UID, 'vol-1');
+
+      expect(mocked.doc).toHaveBeenLastCalledWith(db, 'users', UID, 'books', 'vol-1', 'private', 'review');
+      expect(review).toEqual({ text: 'Loved it.', updatedAt });
+    });
+
+    it('is null when there is no review', async () => {
+      mocked.getDoc.mockResolvedValue(snapshot('review', undefined) as never);
+      expect(await createFirestoreLibraryRepository(db).getReview(UID, 'vol-1')).toBeNull();
+    });
+
+    it('saves a review, and deletes it when emptied', async () => {
+      const repository = createFirestoreLibraryRepository(db);
+
+      await repository.saveReview(UID, 'vol-1', 'Loved it.');
+      expect(mocked.setDoc).toHaveBeenCalledWith(
+        { path: `users/${UID}/books/vol-1/private/review` },
+        { text: 'Loved it.', updatedAt: 'SERVER_TIMESTAMP' },
+      );
+
+      await repository.saveReview(UID, 'vol-1', '');
+      expect(mocked.deleteDoc).toHaveBeenCalledWith({ path: `users/${UID}/books/vol-1/private/review` });
+    });
   });
 
   describe('updateRating', () => {

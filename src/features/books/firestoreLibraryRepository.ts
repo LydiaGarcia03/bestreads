@@ -12,6 +12,7 @@ import {
   query,
   runTransaction,
   serverTimestamp,
+  setDoc,
   Timestamp,
   updateDoc,
   where,
@@ -29,6 +30,9 @@ import type { LibraryRepository } from './types';
 const USERS = 'users';
 const BOOKS = 'books';
 const SHELVES = 'shelves';
+const PRIVATE = 'private';
+const REVIEW = 'review';
+const COVER = 'cover';
 const PUBLIC = 'public';
 const RATINGS = 'ratings';
 /** Firestore's limit of writes per batch. */
@@ -54,6 +58,7 @@ export function createFirestoreLibraryRepository(db: Firestore = getFirestore(ge
   const booksOf = (uid: string) => collection(db, USERS, uid, BOOKS);
   const bookRef = (uid: string, bookId: string) => doc(db, USERS, uid, BOOKS, bookId);
   const publicRatingRef = (uid: string, bookId: string) => doc(db, PUBLIC, uid, RATINGS, bookId);
+  const privateRef = (uid: string, bookId: string, name: string) => doc(db, USERS, uid, BOOKS, bookId, PRIVATE, name);
   const shelvesOf = (uid: string) => collection(db, USERS, uid, SHELVES);
   const shelfRef = (uid: string, shelfId: string) => doc(db, USERS, uid, SHELVES, shelfId);
   const toBook = (id: string, data: DocumentData): LibraryBook => readLibraryBook(id, withDates(data));
@@ -97,10 +102,44 @@ export function createFirestoreLibraryRepository(db: Firestore = getFirestore(ge
     },
 
     async removeBook(uid, bookId) {
+      // Subcollections are not deleted with their parent, so the private documents go explicitly.
       const batch = writeBatch(db);
-      batch.delete(bookRef(uid, bookId));
+      batch.delete(privateRef(uid, bookId, REVIEW));
+      batch.delete(privateRef(uid, bookId, COVER));
       batch.delete(publicRatingRef(uid, bookId));
+      batch.delete(bookRef(uid, bookId));
       await batch.commit();
+    },
+
+    async getReview(uid, bookId) {
+      const snapshot = await getDoc(privateRef(uid, bookId, REVIEW));
+      if (!snapshot.exists()) return null;
+      const data = withDates(snapshot.data());
+      return {
+        text: typeof data.text === 'string' ? data.text : '',
+        updatedAt: data.updatedAt instanceof Date ? data.updatedAt : null,
+      };
+    },
+
+    async getPersonalCover(uid, bookId) {
+      const snapshot = await getDoc(privateRef(uid, bookId, COVER));
+      const dataUrl = snapshot.exists() ? snapshot.data().dataUrl : null;
+      return typeof dataUrl === 'string' ? dataUrl : null;
+    },
+
+    async savePersonalCover(uid, bookId, dataUrl) {
+      // One batch: the flag on the book (read by lists) never disagrees with the cover document.
+      const batch = writeBatch(db);
+      if (dataUrl) batch.set(privateRef(uid, bookId, COVER), { dataUrl, updatedAt: serverTimestamp() });
+      else batch.delete(privateRef(uid, bookId, COVER));
+      batch.update(bookRef(uid, bookId), { hasPersonalCover: dataUrl !== null, updatedAt: serverTimestamp() });
+      await batch.commit();
+    },
+
+    async saveReview(uid, bookId, text) {
+      const ref = privateRef(uid, bookId, REVIEW);
+      if (text) await setDoc(ref, { text, updatedAt: serverTimestamp() });
+      else await deleteDoc(ref);
     },
 
     async listBooks(uid, { filter, limit: count }) {
