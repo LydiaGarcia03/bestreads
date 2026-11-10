@@ -32,7 +32,8 @@ describe('SettingsPage', () => {
     const user = userEvent.setup();
     renderWithProviders(<SettingsPage />);
 
-    await user.selectOptions(screen.getByRole('combobox', { name: 'Language' }), 'pt-BR');
+    await user.click(screen.getByRole('button', { name: 'Language: English' }));
+    await user.click(screen.getByRole('menuitemradio', { name: 'Português (Brasil)' }));
 
     expect(screen.getByRole('heading', { level: 1, name: 'Configurações' })).toBeInTheDocument();
     expect(screen.getByRole('radio', { name: 'Sistema' })).toBeInTheDocument();

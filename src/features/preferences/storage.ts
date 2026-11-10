@@ -1,9 +1,9 @@
 /**
  * Device-local preferences (localStorage). Used before login and as a fast cache;
- * signed-in preferences will also be synced to `users/{uid}` (Phase 1.5).
- * Every access is wrapped in try/catch: storage can be blocked (private mode, policies).
+ * signed-in preferences are also synced to `users/{uid}` (see `features/account`).
  */
 import { isSupportedLanguage, type Language } from '@/shared/i18n';
+import { readLocalValue as readPreference, writeLocalValue as writePreference } from '@/shared/storage/localStorage';
 import { DEFAULT_THEME_PREFERENCE, isThemePreference, type ThemePreference } from './theme';
 
 export const STORAGE_KEYS = {
@@ -11,21 +11,7 @@ export const STORAGE_KEYS = {
   language: 'bestreads.language',
 } as const;
 
-export function readPreference(key: string): string | null {
-  try {
-    return window.localStorage.getItem(key);
-  } catch {
-    return null;
-  }
-}
-
-export function writePreference(key: string, value: string): void {
-  try {
-    window.localStorage.setItem(key, value);
-  } catch {
-    // Storage unavailable: the preference lasts for this session only.
-  }
-}
+export { readPreference, writePreference };
 
 export function loadThemePreference(): ThemePreference {
   const stored = readPreference(STORAGE_KEYS.theme);

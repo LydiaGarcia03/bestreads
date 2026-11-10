@@ -54,7 +54,8 @@ describe('PreferencesSync', () => {
     await user.click(screen.getByRole('radio', { name: 'Dark' }));
     await waitFor(() => expect(userRepository.savePreferences).toHaveBeenCalledWith(TEST_USER.uid, { theme: 'dark' }));
 
-    await user.selectOptions(screen.getByRole('combobox', { name: 'Language' }), 'pt-BR');
+    await user.click(screen.getByRole('button', { name: 'Language: English' }));
+    await user.click(screen.getByRole('menuitemradio', { name: 'Português (Brasil)' }));
     await waitFor(() =>
       expect(userRepository.savePreferences).toHaveBeenLastCalledWith(TEST_USER.uid, { language: 'pt-BR' }),
     );

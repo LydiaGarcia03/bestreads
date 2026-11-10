@@ -3,14 +3,20 @@ import { STORAGE_KEYS } from './storage';
 
 describe('resolveInitialLanguage', () => {
   beforeEach(() => window.localStorage.clear());
+  afterEach(() => vi.restoreAllMocks());
 
-  it('prefers the saved language over the browser languages', () => {
-    window.localStorage.setItem(STORAGE_KEYS.language, 'en');
-    expect(resolveInitialLanguage(['pt-BR'])).toBe('en');
+  it('uses the saved language', () => {
+    window.localStorage.setItem(STORAGE_KEYS.language, 'pt-BR');
+    expect(resolveInitialLanguage()).toBe('pt-BR');
   });
 
-  it('detects from the browser when nothing is saved', () => {
-    expect(resolveInitialLanguage(['pt-PT', 'en'])).toBe('pt-BR');
-    expect(resolveInitialLanguage(['es'])).toBe('en');
+  it('defaults to English, even for a Portuguese browser', () => {
+    vi.spyOn(navigator, 'languages', 'get').mockReturnValue(['pt-BR', 'pt']);
+    expect(resolveInitialLanguage()).toBe('en');
+  });
+
+  it('ignores an unsupported saved value', () => {
+    window.localStorage.setItem(STORAGE_KEYS.language, 'fr');
+    expect(resolveInitialLanguage()).toBe('en');
   });
 });

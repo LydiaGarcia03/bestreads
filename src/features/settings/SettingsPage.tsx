@@ -29,7 +29,7 @@ export function SettingsPage() {
         <h2 id="settings-language" className="text-sm font-bold tracking-wide text-fg-muted uppercase">
           {t('settings.languageSection')}
         </h2>
-        <LanguageSelect />
+        <LanguageSelect align="start" />
       </section>
     </div>
   );
