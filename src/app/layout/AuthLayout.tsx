@@ -9,7 +9,7 @@ export function AuthLayout() {
   return (
     <div className="flex min-h-dvh flex-col">
       <header className="border-b border-border bg-bg pt-[env(safe-area-inset-top)] lg:bg-surface">
-        <div className="mx-auto flex max-w-[1280px] items-center justify-between gap-6 px-5 py-3 lg:px-6">
+        <div className="mx-auto flex max-w-page items-center justify-between gap-6 px-5 py-3 lg:px-6">
           <Logo />
           <LanguageSelect />
         </div>

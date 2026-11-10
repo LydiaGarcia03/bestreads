@@ -136,6 +136,9 @@
 
   --font-serif: 'Merriweather', Georgia, serif;
   --font-sans: 'Lato', system-ui, sans-serif;
+
+  /* Widest the app content gets on large screens (`max-w-page`): top bar, side menu + page. */
+  --container-page: 1580px;
 }
 
 @layer base {

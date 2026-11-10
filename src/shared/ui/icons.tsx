@@ -25,11 +25,12 @@ function Icon({ size = 20, children, ...props }: IconProps & { children: ReactNo
   );
 }
 
-export function GlobeIcon(props: IconProps) {
+/** Language: a Latin "A" next to a CJK-style glyph (the common "translate" sign). */
+export function LanguageIcon(props: IconProps) {
   return (
-    <Icon size={15} {...props}>
-      <circle cx="12" cy="12" r="9" />
-      <path d="M3 12h18M12 3c2.5 3 2.5 15 0 18M12 3c-2.5 3-2.5 15 0 18" />
+    <Icon size={18} {...props}>
+      <path d="M3 5h9M7.5 3v2M10 5c-.7 3.6-3 6.6-6 8.5M5.5 8.5c1.3 2.2 3.3 3.8 5.5 4.5" />
+      <path d="M12.5 21l4.25-10L21 21M14 17.5h5.5" />
     </Icon>
   );
 }
@@ -51,10 +52,23 @@ export function HomeIcon(props: IconProps) {
   );
 }
 
-export function ShelvesIcon(props: IconProps) {
+/** Three book spines, one leaning (as in the logo). Used where a book has no cover. */
+export function BooksIcon(props: IconProps) {
   return (
     <Icon {...props}>
       <path d="M4 4h5v16H4zM10 4h5v16h-5zM16 5l4 1-3 15-4-1z" />
+    </Icon>
+  );
+}
+
+/** A stack of three books lying down, each a different length, with a band on the spine. */
+export function ShelvesIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <rect x="3" y="16" width="18" height="5" rx="1" />
+      <rect x="5" y="11" width="15" height="5" rx="1" />
+      <rect x="4" y="6" width="13" height="5" rx="1" />
+      <path d="M7 16v5M16.5 11v5M7.5 6v5" />
     </Icon>
   );
 }
@@ -69,11 +83,72 @@ export function FriendsIcon(props: IconProps) {
   );
 }
 
+/** Calendar with a star: the year in review. */
 export function YearIcon(props: IconProps) {
   return (
     <Icon {...props}>
-      <rect x="5" y="3" width="14" height="18" rx="2" />
-      <path d="M9 8h6M9 12h6M9 16h3" />
+      <rect x="3" y="4.5" width="18" height="16.5" rx="2" />
+      <path d="M3 9.5h18M8 2.5v4M16 2.5v4" />
+      <path
+        d="M12 12l.88 2.29 2.45.13-1.9 1.54.63 2.37L12 17l-2.06 1.33.63-2.37-1.9-1.54 2.45-.13z"
+        fill="currentColor"
+        strokeWidth={1}
+      />
+    </Icon>
+  );
+}
+
+export function ChevronDownIcon(props: IconProps) {
+  return (
+    <Icon size={16} strokeWidth={2.5} {...props}>
+      <path d="M6 9l6 6 6-6" />
+    </Icon>
+  );
+}
+
+/** Solid five-point star (filled with the text color). */
+export function StarIcon(props: IconProps) {
+  return (
+    <Icon fill="currentColor" stroke="none" {...props}>
+      <path d="M12 2.2l2.95 6.1 6.7.85-4.9 4.65 1.25 6.65L12 17.2l-6 3.25 1.25-6.65-4.9-4.65 6.7-.85z" />
+    </Icon>
+  );
+}
+
+export function CloseIcon(props: IconProps) {
+  return (
+    <Icon size={16} strokeWidth={2.5} {...props}>
+      <path d="M6 6l12 12M18 6L6 18" />
+    </Icon>
+  );
+}
+
+export function CheckIcon(props: IconProps) {
+  return (
+    <Icon size={16} strokeWidth={2.5} {...props}>
+      <path d="M5 12.5l4.5 4.5L19 7.5" />
+    </Icon>
+  );
+}
+
+export function ListIcon(props: IconProps) {
+  return (
+    <Icon size={18} {...props}>
+      <path d="M9 6h11M9 12h11M9 18h11" />
+      <rect x="3.5" y="4.5" width="3" height="3" rx="0.5" />
+      <rect x="3.5" y="10.5" width="3" height="3" rx="0.5" />
+      <rect x="3.5" y="16.5" width="3" height="3" rx="0.5" />
+    </Icon>
+  );
+}
+
+export function GridIcon(props: IconProps) {
+  return (
+    <Icon size={18} {...props}>
+      <rect x="4" y="4" width="6.5" height="6.5" rx="1" />
+      <rect x="13.5" y="4" width="6.5" height="6.5" rx="1" />
+      <rect x="4" y="13.5" width="6.5" height="6.5" rx="1" />
+      <rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1" />
     </Icon>
   );
 }

@@ -17,7 +17,7 @@ describe('AppRoutes', () => {
     expect(await screen.findByRole('heading', { level: 1, name: 'Home' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Bestreads home' })).toBeInTheDocument();
     expect(screen.getByRole('search')).toBeInTheDocument();
-    expect(screen.getByRole('combobox', { name: 'Language' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Language: English' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Profile and settings' })).toBeInTheDocument();
     expect(mainNavs()).toHaveLength(2);
   });
@@ -27,7 +27,7 @@ describe('AppRoutes', () => {
     ['/friends', 'Friends'],
     ['/year', 'My Year'],
     ['/settings', 'Settings'],
-    ['/book/abc123', 'Book'],
+    ['/book/abc123', 'Book not found'],
     ['/search', 'Search'],
   ])('renders %s', async (route, title) => {
     renderWithProviders(<AppRoutes />, { route });
@@ -62,13 +62,13 @@ describe('AppRoutes', () => {
     await screen.findByRole('heading', { level: 1, name: 'Home' });
 
     await user.keyboard('/');
-    const input = screen.getByRole('searchbox', { name: 'Search books' });
+    const input = screen.getByRole('combobox', { name: 'Search books' });
     expect(input).toHaveFocus();
     expect(input).toHaveValue('');
 
     await user.keyboard('  Project   Hail Mary {Enter}');
     expect(await screen.findByRole('heading', { level: 1, name: 'Results for “Project Hail Mary”' })).toBeInTheDocument();
-    expect(screen.getByRole('searchbox', { name: 'Search books' })).toHaveValue('Project Hail Mary');
+    expect(screen.getByRole('combobox', { name: 'Search books' })).toHaveValue('Project Hail Mary');
   });
 
   it('does not navigate for a blank search', async () => {
@@ -76,7 +76,7 @@ describe('AppRoutes', () => {
     renderWithProviders(<AppRoutes />);
     await screen.findByRole('heading', { level: 1, name: 'Home' });
 
-    await user.type(screen.getByRole('searchbox', { name: 'Search books' }), '   {Enter}');
+    await user.type(screen.getByRole('combobox', { name: 'Search books' }), '   {Enter}');
     expect(screen.getByRole('heading', { level: 1, name: 'Home' })).toBeInTheDocument();
   });
 
@@ -105,7 +105,7 @@ describe('AppRoutes', () => {
     expect(await screen.findByRole('heading', { level: 1, name: 'Sign in' })).toBeInTheDocument();
     expect(screen.queryByRole('navigation', { name: 'Main' })).not.toBeInTheDocument();
     expect(screen.queryByRole('search')).not.toBeInTheDocument();
-    expect(screen.getByRole('combobox', { name: 'Language' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Language: English' })).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Continue with Google' }));
     expect(await screen.findByRole('heading', { level: 1, name: 'Shelves' })).toBeInTheDocument();
@@ -126,6 +126,6 @@ describe('AppRoutes', () => {
     const [nav] = screen.getAllByRole('navigation', { name: 'Principal' });
     if (!nav) throw new Error('main navigation not rendered');
     expect(within(nav).getByRole('link', { name: 'Estantes' })).toBeInTheDocument();
-    expect(screen.getByRole('searchbox', { name: 'Buscar livros' })).toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: 'Buscar livros' })).toBeInTheDocument();
   });
 });

@@ -28,7 +28,7 @@ export function AppShell() {
 
       <TopBar />
 
-      <div className="mx-auto flex max-w-[1280px] gap-6 lg:p-6">
+      <div className="mx-auto flex max-w-page gap-6 lg:p-6">
         <SideNav />
         <main
           id={MAIN_CONTENT_ID}

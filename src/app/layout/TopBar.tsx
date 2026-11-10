@@ -8,17 +8,17 @@ import { Logo } from './Logo';
 
 /**
  * Mobile: logo + actions on the first row, full-width search below.
- * Desktop (lg): one row — logo, large search, actions on the right.
+ * Desktop (lg): one row in three columns — logo on the left, search centered, actions on the right.
  */
 export function TopBar() {
   const { t } = useTranslation();
 
   return (
     <header className="border-b border-border bg-bg pt-[env(safe-area-inset-top)] lg:bg-surface">
-      <div className="mx-auto flex max-w-[1280px] flex-wrap items-center gap-x-6 gap-y-2.5 px-5 py-3 lg:flex-nowrap lg:px-6">
+      <div className="mx-auto flex max-w-page flex-wrap items-center gap-x-6 gap-y-2.5 px-5 py-3 lg:grid lg:grid-cols-[1fr_minmax(0,560px)_1fr] lg:px-6">
         <Logo />
-        <SearchBar className="order-last w-full lg:order-none lg:max-w-[560px] lg:flex-1" />
-        <div className="ml-auto flex items-center gap-2 lg:gap-3">
+        <SearchBar className="order-last w-full lg:order-none" />
+        <div className="ml-auto flex items-center gap-2 lg:justify-self-end lg:gap-3">
           <LanguageSelect />
           <Link
             to={PATHS.settings}
