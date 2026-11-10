@@ -5,7 +5,7 @@ Each phase lists its tasks and a "Done when" checklist. Mark tasks with `[x]` as
 
 Status legend: `[ ]` not started · `[~]` in progress · `[x]` done
 
-Current phase: **Phase 5 — Reading plan** (next; Phases 2–4 are done except the 390px / light theme check on a real phone or DevTools)
+Current phase: **Phase 6 — Social** (next; Phases 2–5 are done except the 390px / light theme check on a real phone or DevTools)
 
 ---
 
@@ -153,11 +153,11 @@ Done when:
 
 Only for books with status "Reading"; opt-in via "Add reading plan".
 
-- [ ] Plan editor: pages per day, time, weekdays, reminder
-- [ ] Estimated finish date calculation (unit tested)
-- [ ] "Tonight's book" strip on Home when a plan exists
-- [ ] Reminder delivery approach defined (no backend available; evaluate local notifications via service worker)
-- [ ] Plan UI hidden for every other status
+- [x] Plan editor: pages per day, time (optional), weekdays, reminder; optional `plan` on the book in `firestore.rules` (only while reading)
+- [x] Estimated finish date calculation (unit tested), shown in the editor and in the plan strip
+- [x] "Tonight's book" strip on Home when a plan has a session today (earliest session first)
+- [x] Reminder delivery approach defined: an iCalendar (.ics) file with a weekly event and an alarm, imported into the user's calendar app. Scheduled notifications need a push server (Notification Triggers was abandoned), which the Spark plan and "no backend" rule out
+- [x] Plan UI hidden for every other status; the plan is dropped when the book leaves "Currently reading"
 
 ---
 
@@ -193,7 +193,7 @@ Only for books with status "Reading"; opt-in via "Add reading plan".
 
 ## Open questions
 
-- Reminder delivery for reading plans without a backend (Phase 5).
+- ~~Reminder delivery for reading plans without a backend~~ Decided: calendar file (.ics) with a weekly event and an alarm; the user's calendar app sends the reminders.
 - ~~Firestore emulator for rules tests~~ Decided: `firebase-tools` and `@firebase/rules-unit-testing` as dev dependencies; rules tests run locally (`npm run test:rules`) and in CI.
 - `signInWithRedirect` on a domain other than `<project>.firebaseapp.com` (GitHub Pages) is affected by browser third-party storage partitioning; the redirect fallback may need an auth-domain proxy or may be dropped. Popup login is the primary flow.
 - ~~Search relevance~~ Decided: Google Books (whole words only, strong for Portuguese and new books) and Open Library (prefix on the last word, reader counts) are searched in parallel; copies of a work are merged and the list is ranked by match quality (title starts with the text or the text names an author > every word matches > other) and then popularity. A slow API is dropped at 1.5 s when the others already gave 3+ good matches, otherwise at 4 s. Goodreads-level popularity data is not available from free APIs, so very new or niche books can still rank lower than on Goodreads.
