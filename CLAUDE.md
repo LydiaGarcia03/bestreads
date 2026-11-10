@@ -20,6 +20,7 @@ Core features:
 - Series shown as an ordered, collapsible group inside a shelf
 - Social: follow users by @username and see their public ratings
 - Shareable image cards (single book and year-in-review, Wrapped-style)
+- Recommendations ("Popular books" on Home): never recommend books by the authors in `EXCLUDED_AUTHORS` (`src/features/home/recommendationRules.ts`), currently J.K. Rowling under any spelling and her pen name Robert Galbraith. Every future recommendation source goes through `isRecommendable`. Search is not filtered.
 - Deployed as a static site on GitHub Pages
 
 ## Rules
@@ -27,7 +28,7 @@ Core features:
 ### Language
 - **All communication with the user must be in Brazilian Portuguese (PT-BR):** explanations, questions, summaries, plans, review notes.
 - **All code and app content must be in English:** identifiers, comments, commit messages, PR titles and descriptions, branch names, file names, UI strings, docs inside the repo.
-- The app UI supports exactly two languages: English (`en`, default) and Brazilian Portuguese (`pt-BR`). A small language dropdown (globe icon + `EN` / `PT-BR`) sits in the top bar on mobile and desktop; the choice is saved in the user's preferences. Every user-facing string goes through i18n (`react-i18next`); never hardcode UI text in components. Add the key to `en` first, then `pt-BR`. Translations live in `src/shared/i18n/locales/{en,pt-BR}.json`. Keys are type-checked against `en.json`, and a test fails if the two files don't have the same keys.
+- The app UI supports exactly two languages: English (`en`, default) and Brazilian Portuguese (`pt-BR`). A small language dropdown (language icon + `EN` / `PT-BR`) sits in the top bar on mobile and desktop; the choice is saved in the user's preferences. Every user-facing string goes through i18n (`react-i18next`); never hardcode UI text in components. Add the key to `en` first, then `pt-BR`. Translations live in `src/shared/i18n/locales/{en,pt-BR}.json`. Keys are type-checked against `en.json`, and a test fails if the two files don't have the same keys.
 
 ### Git and authorship
 - **Never add Claude as author or co-author of a commit.** No `Co-Authored-By: Claude ...` trailer, no "Generated with Claude Code" line, no AI attribution in commit messages, PR descriptions, or code comments.
@@ -37,7 +38,7 @@ Core features:
 - Commit messages follow Conventional Commits in English: `type(scope): description`.
   - Use a colon after the scope, never a dash.
   - Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`.
-  - Scopes: `auth`, `account`, `search`, `books`, `shelves`, `rating`, `progress`, `review`, `cover`, `series`, `plan`, `social`, `share`, `year`, `pwa`, `i18n`, `theme`, `layout`, `rules`, `deploy`, `deps`, `ai`. Add a new scope to this list when a new area appears.
+  - Scopes: `auth`, `account`, `catalog`, `search`, `books`, `shelves`, `home`, `rating`, `progress`, `review`, `cover`, `series`, `plan`, `social`, `share`, `year`, `pwa`, `i18n`, `theme`, `layout`, `rules`, `deploy`, `deps`, `ai`. Add a new scope to this list when a new area appears.
   - Description: imperative mood, lowercase, no trailing period, header ≤ 72 characters.
   - Optional body explains why. Breaking changes use `!` after the scope (`feat(rules)!: ...`) or a `BREAKING CHANGE:` footer.
   - Examples: `feat(rating): add 0.25 stepper with partial star fill`, `fix(auth): fall back to redirect login on mobile`, `docs(ai): add change log and development plan`.
@@ -81,7 +82,7 @@ Core features:
 | i18n | `react-i18next` (default `en`, also `pt-BR`) |
 | Auth | Firebase Authentication (Google + email/password) |
 | Database | Cloud Firestore (Spark plan) |
-| Book data | Google Books API (primary) + Open Library (fallback for missing cover/description) |
+| Book data | Google Books API + Open Library, searched in parallel and ranked as one list; Open Library also fills missing covers/descriptions |
 | Share cards | `html-to-image` + Web Share API (download PNG on desktop) |
 | PWA | `vite-plugin-pwa` |
 | Deploy | GitHub Actions to GitHub Pages |
@@ -114,9 +115,10 @@ Core features:
   3. **Data access** (`api.ts`, providers): the only place that talks to Firebase, `fetch` or `localStorage`.
   4. **Domain** (plain TypeScript): pure logic with no React or I/O, such as rating math, progress, reading plan estimates and API response mappers.
 - Components never import the Firebase SDK, call `fetch` or touch storage directly.
-- External services sit behind small interfaces, so they can be swapped and mocked. For example, a `BookSearchProvider` is implemented by Google Books and by Open Library.
+- External services sit behind small interfaces, so they can be swapped and mocked. For example, a `CatalogProvider` (`src/features/catalog/`) is implemented by Google Books and by Open Library.
 - Firebase-backed implementations are loaded with dynamic `import()` and injected through `AppProviders` (`src/app/services.ts`); tests pass the fakes from `src/test/fakes.ts`. Only those lazily loaded modules import `src/shared/firebase/app.ts`.
 - Features import each other only through the feature's public `index.ts`. Page components are the exception: they are not exported from the index, and `src/app/AppRoutes.tsx` lazy-loads each one from its own module so it gets its own chunk. Shared, feature-agnostic code lives in `src/shared/` (UI primitives, utils).
+- Everything re-exported by an `index.ts` that initial-bundle code imports ends up in the initial JS. A feature may therefore have a second public entry, `lazy.ts`, for code used only by lazily loaded modules (e.g. `src/features/books/lazy.ts`, imported by the shelves screen); initial-bundle code never imports it.
 
 ### SOLID and clean code
 - **Single responsibility:** one reason to change per module, component and hook. Split a component when it mixes data fetching, state and layout.
@@ -132,7 +134,7 @@ Core features:
 ### Performance
 - Split code per route with `React.lazy`, and load heavy libraries on demand (e.g. `html-to-image` only when sharing).
 - Import only the modular Firebase SDK functions in use.
-- Budget: initial JS ≤ 250 KB gzip. Check the `npm run build` output whenever a dependency or a new route is added, and report the size change.
+- Budget: initial JS ≤ 250 KB gzip, counting every script `dist/index.html` loads or preloads (the `index-*.js` chunk alone is not the total). Check it whenever a dependency or a new route is added, and report the size change.
 - Avoid needless re-renders:
   - Memoize context values.
   - Split contexts that change at different rates.
@@ -158,7 +160,7 @@ Core features:
 - TypeScript strict mode; no `any` without a comment explaining why.
 - Feature-based folders: `src/features/<feature>/` (components, hooks, api, types).
 - Firestore access only through typed functions in `src/features/*/api.ts`; components never call the SDK directly.
-- Book API calls are debounced (400 ms) and cached with TanStack Query.
+- Book API calls are debounced (1 s while typing in the search bar) and cached with TanStack Query.
 - Accessible by default: labels on inputs, alt text on covers, keyboard navigation.
 
 ## Platforms: desktop and mobile (PWA)
