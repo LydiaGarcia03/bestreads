@@ -11,7 +11,7 @@ Core features:
 - Login (Google and email/password)
 - Search books (cover, title, author, description) from free public APIs
 - Upload a personal cover for a book (private, never shared)
-- Rate books from 0.25 to 5 stars in 0.25 steps (.25, .5, .75), with a public/private toggle per rating. UI: tap a star for a whole value, then fine-tune with a −/+ stepper (0.25 per step); partial stars render as a clipped fill (e.g. 3.75 = three full stars + a 75% star)
+- Rate books from 0.25 to 5 stars in 0.25 steps (.25, .5, .75), with a public/private toggle per rating. UI: the stars follow the pointer in 0.25 steps (hover previews, click or tap saves; arrow keys change it by 0.25), with no −/+ stepper; partial stars render as a clipped fill (e.g. 3.75 = three full stars + a 75% star)
 - Private review (free text, owner-only)
 - Reading progress by pages or percentage
 - Start and finish dates per read (re-reads supported)
@@ -193,7 +193,7 @@ Static HTML mocks live in `docs/mocks/` (open `docs/mocks/index.html` in a brows
 | --- | --- | --- |
 | `home-mobile-light.html` | Home, mobile, light | Search in top bar, language dropdown, "Currently reading" card with "Update progress" and the "Tonight's book" strip (only when a reading plan exists), shelves with filter chips, series as dot timeline, bottom tabs Home / Shelves / Friends / My Year |
 | `home-mobile-dark.html` | Home, mobile, dark | Same screen in the dark gray theme |
-| `book-mobile-light.html` | Book page, mobile | Cover + "Change cover", status button, shelves, progress (pages / %), "Add reading plan" button, rating with stars + 0.25 stepper, dates, "Add review" button (opens a full-screen editor) |
+| `book-mobile-light.html` | Book page, mobile | Cover + "Change cover", status button, shelves, progress (pages / %), "Add reading plan" button, rating with stars (0.25 steps under the pointer; the mock's −/+ stepper is not used), dates, "Add review" button (opens a full-screen editor) |
 | `home-desktop-light.html` | Home, desktop | Top bar with large search (`/` shortcut), language dropdown, "Install app"; left side menu with tabs and shelves; main column with current book and cover grid; side column with series, Friends, My Year |
 | `book-desktop-dark.html` | Book page, desktop | Left info column (cover, status, shelves, dates) kept as is; center without boxed cards: title + summary, large progress, reading plan strip, rating above a large review textarea; full-height series sidebar on the right |
 

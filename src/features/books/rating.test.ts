@@ -1,4 +1,4 @@
-import { canStepRating, isValidRating, publicRatingOf, starFill, stepRating } from './rating';
+import { isValidRating, publicRatingOf, ratingAtStar, starFill, stepRating } from './rating';
 
 describe('isValidRating', () => {
   it.each([0.25, 0.5, 3.75, 5])('accepts %s', (value) => {
@@ -43,12 +43,21 @@ describe('stepRating', () => {
     expect(rating).toBe(3.25);
   });
 
-  it('tells whether a step changes anything', () => {
-    expect(canStepRating(5, 1)).toBe(false);
-    expect(canStepRating(5, -1)).toBe(true);
-    expect(canStepRating(0.25, -1)).toBe(false);
-    expect(canStepRating(null, -1)).toBe(false);
-    expect(canStepRating(null, 1)).toBe(true);
+});
+
+describe('ratingAtStar', () => {
+  it('rounds the pointer position up to the next quarter of a star', () => {
+    expect(ratingAtStar(1, 0)).toBe(0.25);
+    expect(ratingAtStar(1, 0.1)).toBe(0.25);
+    expect(ratingAtStar(1, 0.26)).toBe(0.5);
+    expect(ratingAtStar(4, 0.75)).toBe(3.75);
+    expect(ratingAtStar(4, 0.76)).toBe(4);
+    expect(ratingAtStar(5, 1)).toBe(5);
+  });
+
+  it('stays within 0.25 and 5', () => {
+    expect(ratingAtStar(0, -1)).toBe(0.25);
+    expect(ratingAtStar(9, 2)).toBe(5);
   });
 });
 

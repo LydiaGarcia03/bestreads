@@ -241,11 +241,6 @@
   "rating": {
     "title": "Minha nota",
     "stars": "Estrelas da nota",
-    "rateStars_one": "Dar {{count}} estrela",
-    "rateStars_other": "Dar {{count}} estrelas",
-    "fineTune": "Ajustar nota",
-    "lower": "Diminuir a nota em {{step}}",
-    "raise": "Aumentar a nota em {{step}}",
     "value": "{{value}} de 5",
     "unrated": "Sem nota",
     "clear": "Apagar nota",

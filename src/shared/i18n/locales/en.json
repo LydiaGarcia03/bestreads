@@ -241,11 +241,6 @@
   "rating": {
     "title": "My rating",
     "stars": "Rating stars",
-    "rateStars_one": "Rate {{count}} star",
-    "rateStars_other": "Rate {{count}} stars",
-    "fineTune": "Fine-tune rating",
-    "lower": "Lower rating by {{step}}",
-    "raise": "Raise rating by {{step}}",
     "value": "{{value}} out of 5",
     "unrated": "Not rated",
     "clear": "Clear rating",

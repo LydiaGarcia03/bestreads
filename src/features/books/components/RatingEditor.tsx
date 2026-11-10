@@ -1,7 +1,7 @@
-import { useId } from 'react';
+import { useId, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { LibraryBook } from '../library';
-import { canStepRating, RATING_STEP, STAR_COUNT, starFill, stepRating } from '../rating';
+import { MAX_RATING, MIN_RATING, ratingAtStar, STAR_COUNT, starFill, stepRating } from '../rating';
 import type { RatingChange } from '../types';
 import { useUpdateRating } from '../useLibrary';
 import { Star } from './Star';
@@ -9,9 +9,19 @@ import { Star } from './Star';
 const STAR_POSITIONS = Array.from({ length: STAR_COUNT }, (_, index) => index + 1);
 const STAR_SIZE = 32;
 
+/** Keys that move the rating, as in any slider. */
+const KEY_CHANGES: Record<string, (rating: number | null) => number | null> = {
+  ArrowRight: (rating) => stepRating(rating, 1),
+  ArrowUp: (rating) => stepRating(rating, 1),
+  ArrowLeft: (rating) => stepRating(rating, -1),
+  ArrowDown: (rating) => stepRating(rating, -1),
+  Home: () => MIN_RATING,
+  End: () => MAX_RATING,
+};
+
 /**
- * "My rating": tap a star for a whole value, fine-tune with −/+ (0.25 per step), clear it,
- * and choose whether the rating is public. Changes are saved at once.
+ * "My rating": the stars follow the pointer in 0.25 steps (a partial star fills as you move across
+ * it) and a click or tap saves; the arrow keys change it by 0.25. It can be cleared, and made public.
  */
 export function RatingEditor({ book }: { book: LibraryBook }) {
   const { t, i18n } = useTranslation();
@@ -19,9 +29,11 @@ export function RatingEditor({ book }: { book: LibraryBook }) {
   const hintId = useId();
   const updateRating = useUpdateRating();
   const { rating, ratingPublic } = book;
+  const starRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const [preview, setPreview] = useState<number | null>(null);
 
   const number = new Intl.NumberFormat(i18n.resolvedLanguage, { maximumFractionDigits: 2 });
-  const step = number.format(RATING_STEP);
+  const shown = preview ?? rating;
 
   const save = (change: Partial<RatingChange>) => {
     const next = { rating, ratingPublic, ...change };
@@ -29,17 +41,41 @@ export function RatingEditor({ book }: { book: LibraryBook }) {
     updateRating.mutate({ book, change: next });
   };
 
-  const stepButton = (direction: 1 | -1, symbol: string, label: string) => (
-    <button
-      type="button"
-      aria-label={label}
-      disabled={!canStepRating(rating, direction)}
-      onClick={() => save({ rating: stepRating(rating, direction) })}
-      className="flex size-11 items-center justify-center rounded-full text-lg text-fg hover:bg-surface-muted disabled:opacity-40 disabled:hover:bg-transparent lg:size-9"
-    >
-      {symbol}
-    </button>
-  );
+  /** The star under `clientX` (or the nearest one) and how far across it the pointer is. */
+  const ratingAtPointer = (clientX: number) => {
+    const stars = starRefs.current;
+    for (const [index, star] of stars.entries()) {
+      if (!star) continue;
+      const box = star.getBoundingClientRect();
+      if (clientX <= box.right || index === stars.length - 1) {
+        return ratingAtStar(index + 1, box.width > 0 ? (clientX - box.left) / box.width : 1);
+      }
+    }
+    return MIN_RATING;
+  };
+
+  const onPointerDown = (event: PointerEvent<HTMLDivElement>) => {
+    // Keeps the moves of a finger sliding across the stars coming here.
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+    setPreview(ratingAtPointer(event.clientX));
+  };
+
+  const onPointerUp = (event: PointerEvent<HTMLDivElement>) => {
+    save({ rating: ratingAtPointer(event.clientX) });
+    // A mouse still hovers (the preview follows it); a finger is gone.
+    if (event.pointerType !== 'mouse') setPreview(null);
+  };
+
+  const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    const change = KEY_CHANGES[event.key];
+    if (!change) return;
+    event.preventDefault();
+    // Starts from what is shown: quick key presses can come before the last save shows up in `rating`.
+    const next = change(shown);
+    if (next === shown) return;
+    setPreview(next);
+    updateRating.mutate({ book, change: { rating: next, ratingPublic } });
+  };
 
   return (
     <section aria-labelledby={headingId} className="flex flex-col gap-3">
@@ -58,36 +94,44 @@ export function RatingEditor({ book }: { book: LibraryBook }) {
         )}
       </div>
 
-      <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
-        <div role="group" aria-label={t('rating.stars')} className="flex gap-1">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+        <div
+          role="slider"
+          tabIndex={0}
+          aria-label={t('rating.stars')}
+          aria-valuemin={MIN_RATING}
+          aria-valuemax={MAX_RATING}
+          aria-valuenow={rating ?? undefined}
+          aria-valuetext={rating === null ? t('rating.unrated') : t('rating.value', { value: number.format(rating) })}
+          onPointerMove={(event) => setPreview(ratingAtPointer(event.clientX))}
+          onPointerLeave={() => setPreview(null)}
+          onPointerDown={onPointerDown}
+          onPointerUp={onPointerUp}
+          onPointerCancel={() => setPreview(null)}
+          onKeyDown={onKeyDown}
+          onBlur={() => setPreview(null)}
+          className="flex min-h-11 cursor-pointer touch-none items-center gap-1 rounded-md select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        >
           {STAR_POSITIONS.map((position) => (
-            <button
+            <span
               key={position}
-              type="button"
-              aria-label={t('rating.rateStars', { count: position })}
-              onClick={() => save({ rating: position })}
-              className="flex h-11 w-10 items-center justify-center rounded-md hover:bg-surface-muted"
+              ref={(element) => {
+                starRefs.current[position - 1] = element;
+              }}
+              className="flex"
             >
-              <Star fill={starFill(rating, position)} size={STAR_SIZE} />
-            </button>
+              <Star fill={starFill(shown, position)} size={STAR_SIZE} />
+            </span>
           ))}
         </div>
-
-        <div
-          role="group"
-          aria-label={t('rating.fineTune')}
-          className="flex items-center gap-0.5 rounded-full border border-border-strong p-0.5"
-        >
-          {stepButton(-1, '−', t('rating.lower', { step }))}
-          <output aria-live="polite" className="min-w-12 px-1 text-center font-serif text-base font-bold text-star">
-            {rating === null ? (
-              <span className="font-sans text-xs font-normal text-fg-muted">{t('rating.unrated')}</span>
-            ) : (
-              <span aria-label={t('rating.value', { value: number.format(rating) })}>{number.format(rating)}</span>
-            )}
-          </output>
-          {stepButton(1, '+', t('rating.raise', { step }))}
-        </div>
+        {/* The slider already announces the value; this is the visible number. */}
+        <span aria-hidden="true" className={`min-w-10 font-serif text-base font-bold ${preview === null || preview === rating ? 'text-star' : 'text-fg-muted'}`}>
+          {shown === null ? (
+            <span className="font-sans text-xs font-normal text-fg-muted">{t('rating.unrated')}</span>
+          ) : (
+            number.format(shown)
+          )}
+        </span>
       </div>
 
       <div className="flex flex-col gap-1">

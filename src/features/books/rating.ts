@@ -34,8 +34,14 @@ export function stepRating(rating: number | null, direction: 1 | -1): number | n
   return Math.min(MAX_RATING, Math.max(MIN_RATING, steps / STEPS_PER_STAR));
 }
 
-export function canStepRating(rating: number | null, direction: 1 | -1): boolean {
-  return stepRating(rating, direction) !== rating;
+/**
+ * The rating under the pointer: star `position` (1–5) and how far across it the pointer is (0–1),
+ * rounded up to the next quarter, so the first quarter of star 1 is 0.25 and its right edge is 1.
+ */
+export function ratingAtStar(position: number, fraction: number): number {
+  const quarters = Math.min(STEPS_PER_STAR, Math.max(1, Math.ceil(fraction * STEPS_PER_STAR)));
+  const star = Math.min(STAR_COUNT, Math.max(1, Math.round(position)));
+  return star - 1 + quarters / STEPS_PER_STAR;
 }
 
 /** Slim copy of a public rating in `public/{uid}/ratings/{bookId}`: nothing private (no review, progress or dates). */
