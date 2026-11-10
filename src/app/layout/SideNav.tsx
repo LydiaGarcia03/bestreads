@@ -1,10 +1,18 @@
+import { lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NavLink } from 'react-router-dom';
+import { DESKTOP_QUERY, useMediaQuery } from '@/shared/hooks/useMediaQuery';
 import { MAIN_NAV_ITEMS } from '../navigation';
 
-/** Desktop-only side menu (from `lg`). The user's shelves are added below the tabs in Phase 2. */
+// Desktop only: lazy, so phones never download it (nor request the shelf counts).
+const MyShelvesNav = lazy(() =>
+  import('@/features/shelves/MyShelvesNav').then((module) => ({ default: module.MyShelvesNav })),
+);
+
+/** Desktop-only side menu (from `lg`): the main tabs, then the user's shelves. */
 export function SideNav() {
   const { t } = useTranslation();
+  const isDesktop = useMediaQuery(DESKTOP_QUERY);
 
   return (
     <nav aria-label={t('nav.main')} className="sticky top-6 hidden w-60 shrink-0 self-start lg:block">
@@ -28,6 +36,11 @@ export function SideNav() {
           </li>
         ))}
       </ul>
+      {isDesktop && (
+        <Suspense fallback={null}>
+          <MyShelvesNav />
+        </Suspense>
+      )}
     </nav>
   );
 }
