@@ -17,7 +17,7 @@ export function ShelfChips({ options, selected, path }: ShelfChipsProps) {
 
   return (
     <nav aria-label={t('shelves.chooseShelf')}>
-      <ul className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1 lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0">
+      <ul className="-mx-5 scrollbar-none flex gap-2 overflow-x-auto px-5 pb-1 lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0">
         {options.map((option) => (
           <li key={shelfKey(option.filter)} className="shrink-0">
             <ShelfChip option={option} isSelected={shelfKey(option.filter) === selected} path={path} />

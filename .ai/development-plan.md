@@ -5,7 +5,7 @@ Each phase lists its tasks and a "Done when" checklist. Mark tasks with `[x]` as
 
 Status legend: `[ ]` not started · `[~]` in progress · `[x]` done
 
-Current phase: **Phase 6 — Social** (next; Phases 2–5 are done except the 390px / light theme check on a real phone or DevTools)
+Current phase: **Phase 6 — Social** (next; Phases 2–5 are done and checked at 390px in the dark theme; the light theme check is pending)
 
 ---
 
@@ -119,7 +119,7 @@ Delivered in sub-steps, each one tested and checked in the browser before the ne
 
 Done when:
 - [x] Unit tests for rating math and progress calculation
-- [ ] All screens checked at 390px and 1280px, both themes (the browser window could not be narrowed from the automation; needs a check on a phone or DevTools)
+- [~] All screens checked at 390px and 1280px, both themes: 1280px dark and 390px dark done (390px check found and fixed a visible scrollbar under the shelf chips); light theme pending
 
 ---
 

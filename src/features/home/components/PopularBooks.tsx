@@ -35,7 +35,7 @@ export function PopularBooks() {
       )}
 
       {popular.isSuccess && (
-        <ul className="-mx-5 flex gap-3 overflow-x-auto px-5 pb-2 lg:mx-0 lg:grid lg:grid-cols-[repeat(auto-fill,minmax(8.5rem,1fr))] lg:gap-x-6 lg:gap-y-8 lg:overflow-visible lg:px-0 lg:pb-0">
+        <ul className="scrollbar-none -mx-5 flex gap-3 overflow-x-auto px-5 pb-2 lg:mx-0 lg:grid lg:grid-cols-[repeat(auto-fill,minmax(8.5rem,1fr))] lg:gap-x-6 lg:gap-y-8 lg:overflow-visible lg:px-0 lg:pb-0">
           {popular.data.map((book) => (
             <li key={book.id} className="w-28 shrink-0 lg:w-auto">
               <Link to={buildBookPath(book.id)} className="group flex flex-col gap-1.5 text-fg hover:text-fg">

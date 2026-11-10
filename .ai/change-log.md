@@ -13,6 +13,8 @@ Format:
 ---
 
 ## 2026-11-10
+- fix(shelves): the shelf filter chips no longer show a horizontal scrollbar on phones; the row still scrolls sideways. New `scrollbar-none` utility (`src/index.css`), used by `ShelfChips.tsx` and the "Popular books" strip (`PopularBooks.tsx`), which had the same bar. Regression test in `ShelvesPage.test.tsx`.
+- docs(ai): screens checked at 390px in the dark theme; only the light theme check remains (`.ai/development-plan.md`).
 - feat(plan): reading plans for books being read (Phase 5 done).
   - Domain: `src/features/books/readingPlan.ts` (plan shape and limits, input parsing, stored-plan reading, pages left, finish estimate over the chosen weekdays, pages planned for a day, "Tonight's book" pick), `planCalendar.ts` (iCalendar file: weekly event on the plan days at its time, alarm, ends at the estimated finish), `planFormat.ts` (times, weekdays, dates per locale).
   - Data: optional `plan { pagesPerDay, time, weekdays, reminder }` on `users/{uid}/books/{bookId}`; not written for new books; `statusChangePatch` drops it when the book leaves "Currently reading". `firestore.rules`: `isValidPlan` (1–1000 whole pages, `HH:MM` or null, 1–7 unique weekdays 0–6, reminder needs a time) and plan only while reading; rules test added (20 tests).

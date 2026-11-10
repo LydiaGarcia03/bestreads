@@ -50,6 +50,12 @@ describe('ShelvesPage', () => {
     expect(screen.getByText('25% read')).toBeInTheDocument();
   });
 
+  it('scrolls the chips sideways without a visible scrollbar', () => {
+    renderShelves();
+
+    expect(chips().getByRole('list')).toHaveClass('overflow-x-auto', 'scrollbar-none');
+  });
+
   it('switches shelves with the chips and shows ratings', async () => {
     const user = userEvent.setup();
     renderShelves();

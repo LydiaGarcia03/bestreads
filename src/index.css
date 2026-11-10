@@ -141,6 +141,15 @@
   --container-page: 1580px;
 }
 
+/* Rows that scroll sideways on phones (chips, cover strips): still scrollable, without a visible bar. */
+@utility scrollbar-none {
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 @layer base {
   html {
     background-color: var(--bg);
