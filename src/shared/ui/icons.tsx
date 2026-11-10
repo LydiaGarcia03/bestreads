@@ -181,6 +181,16 @@ export function ShareIcon(props: IconProps) {
   );
 }
 
+/** Download / install: an arrow down onto a tray. */
+export function DownloadIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M12 3v12M7.5 10.5L12 15l4.5-4.5" />
+      <path d="M5 17v2a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2" />
+    </Icon>
+  );
+}
+
 /** Moon (reading plan, "Tonight's book"). */
 export function MoonIcon(props: IconProps) {
   return (

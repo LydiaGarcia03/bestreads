@@ -13,6 +13,13 @@ Format:
 ---
 
 ## 2026-11-10
+- feat(pwa): installable app with service worker, update and offline banners (Phase 8).
+  - build(deps): dev dependencies `vite-plugin-pwa` ^2.0.0 and `@vite-pwa/assets-generator` ^2.0.0; script `generate-pwa-assets`; `pwa-assets.config.ts`.
+  - Icons generated from `public/favicon.svg`: `pwa-64x64.png`, `pwa-192x192.png`, `pwa-512x512.png`, `maskable-icon-512x512.png`, `apple-touch-icon-180x180.png`, `favicon.ico` (`public/`). `index.html`: ICO, SVG and Apple icons, Apple web app meta tags.
+  - `vite.config.ts`: `VitePWA` (manifest: name, description, standalone, theme and background `#F4F1EA`, icons; Workbox precache of the app shell with `navigateFallback`, `CacheFirst` cache for catalog covers; `registerType: 'prompt'`, registration done by the app).
+  - `src/features/pwa/`: `installPrompt.ts` (keeps `beforeinstallprompt`, `appinstalled`, standalone check), `serviceWorker.ts` (registers `virtual:pwa-register` from its own chunk after load; waiting update state), `usePwa.ts` (`useCanInstall`, `useUpdateWaiting`, `useIsOnline`), `InstallAppButton` (top bar), `PwaBanners` (offline notice; "new version" with "Reload" / "Later"; above the page in `AppShell`). `main.tsx` listens for the install prompt before rendering and registers the worker on load. `DownloadIcon`. i18n `pwa.*` (en, pt-BR).
+  - Tests: install button (appears, prompts once, hides when installed, pt-BR), banners (offline and back online, update reload and later). 644 tests pass. Initial JS: 137.4 KB gzip (+1.2 KB); `workbox-window` loads in its own chunk (2.2 KB gzip). Precache: 64 entries.
+  - Plan: Firestore offline cache recorded as an open question (private data left in IndexedDB after sign-out).
 - feat(year): My Year screen and share cards (Phase 7).
   - build(deps): `html-to-image` ^1.11.13, imported dynamically in `src/features/share/shareApi.ts` only when a card is shared (own chunk, 12.5 KB).
   - Domain: `src/features/year/yearReview.ts` (`finishedReadsIn`, `readingYears`, `buildYearReview`: finished reads with re-reads, pages, average rating of distinct rated books, reads per month, top 3 rated, longest book, most-read author with 2+ reads; `parseYear`); `src/features/share/shareMethod.ts` (`chooseShareMethod`: share sheet on phones that accept files, download otherwise; `shareFileName`; card 360 × 640 at pixel ratio 3); `cardStars.ts`.

@@ -5,7 +5,7 @@ Each phase lists its tasks and a "Done when" checklist. Mark tasks with `[x]` as
 
 Status legend: `[ ]` not started · `[~]` in progress · `[x]` done
 
-Current phase: **Phase 7 — Share cards and My Year** (built, waiting for a browser check; Phase 6 built and rules published, waiting for a browser check with two accounts and the admin account; Phases 2–5 are done and checked at 390px in the dark theme; the light theme check is pending)
+Current phase: **Phase 8 — PWA and polish** (PWA built, waiting for a browser check; accessibility pass and final review next; Phase 7 built, waiting for a browser check; Phase 6 built and rules published, waiting for a browser check with two accounts and the admin account; Phases 2–5 are done and checked at 390px in the dark theme; the light theme check is pending)
 
 ---
 
@@ -216,9 +216,13 @@ Decisions:
 
 ## Phase 8 — PWA and polish
 
-- [ ] `vite-plugin-pwa`: manifest (192/512 + maskable icons generated from `public/favicon.svg`, theme color, standalone)
-- [ ] Service worker caching app shell and covers; offline fallback page
-- [ ] "Install app" prompt on desktop and mobile
+- [x] `vite-plugin-pwa`: manifest (192/512 + maskable icons generated from `public/favicon.svg`, theme color, standalone)
+  - Icons from `@vite-pwa/assets-generator` (`npm run generate-pwa-assets`, `pwa-assets.config.ts`; maskable and Apple icons on the logo's dark brown), committed in `public/`.
+- [x] Service worker caching app shell and covers; offline fallback page
+  - The precached app shell is the offline fallback (`navigateFallback: index.html`; HashRouter keeps every route on it); an in-app banner says when the connection is gone. Covers: `CacheFirst`, 400 entries, 60 days. Firestore and the book APIs are never cached by the worker.
+  - Updates wait for the user: a "new version" banner with "Reload" / "Later", so nothing being typed is lost.
+- [x] "Install app" prompt on desktop and mobile (top bar button while the browser offers it; hidden when installed; Safari installs via Share → Add to Home Screen)
+- [ ] Checked in the browser: install on desktop and Android, offline launch, update banner after a deploy
 - [ ] Accessibility pass (labels, alt text, keyboard navigation, touch targets ≥ 44px)
 - [ ] Final review of every screen at both sizes, both themes, both languages
 
@@ -232,4 +236,5 @@ Decisions:
 - ~~Search relevance~~ Decided: Google Books (whole words only, strong for Portuguese and new books) and Open Library (prefix on the last word, reader counts) are searched in parallel; copies of a work are merged and the list is ranked by match quality (title starts with the text or the text names an author > every word matches > other) and then popularity. A slow API is dropped at 1.5 s when the others already gave 3+ good matches, otherwise at 4 s. Goodreads-level popularity data is not available from free APIs, so very new or niche books can still rank lower than on Goodreads.
 - Search identical to Goodreads: needs Goodreads-like data (reader counts, canonical editions, series, translated titles). Free public APIs (Google Books, Open Library) get close on famous books and series but not identical. Hardcover's API has that kind of data but needs a private token, which can't ship in the frontend and would need a small proxy outside Firebase (against "no custom backend"); undecided.
 - ~~Shelves navigation icon~~ Decided: option A, a stack of three books lying down (`ShelvesIcon`); the other options stay in `docs/mocks/shelves-icon-options.html` for reference.
+- Firestore offline cache (`persistentLocalCache`): would let the library open offline, but keeps the user's private data (books, reviews, covers) in the browser's IndexedDB after signing out, unless sign-out also clears it (`terminate` + `clearIndexedDbPersistence`). Not enabled yet; undecided.
 - ~~Firestore bundle size~~ Decided: keep the full Firestore SDK (≈138 KB gzip, loaded after login, outside the initial bundle). `firebase/firestore/lite` is smaller but has no offline cache, which the PWA (Phase 8) needs.

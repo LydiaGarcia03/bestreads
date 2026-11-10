@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { LanguageSelect } from '@/features/preferences';
+import { InstallAppButton } from '@/features/pwa';
 import { SearchBar } from '@/features/search';
 import { UserIcon } from '@/shared/ui/icons';
 import { PATHS } from '../paths';
@@ -19,6 +20,7 @@ export function TopBar() {
         <Logo />
         <SearchBar className="order-last w-full lg:order-none" />
         <div className="ml-auto flex items-center gap-2 lg:justify-self-end lg:gap-3">
+          <InstallAppButton />
           <LanguageSelect />
           <Link
             to={PATHS.settings}

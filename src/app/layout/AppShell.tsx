@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Outlet } from 'react-router-dom';
+import { PwaBanners } from '@/features/pwa';
 import { PageLoader } from '@/shared/ui/PageLoader';
 import { BottomTabBar } from './BottomTabBar';
 import { SideNav } from './SideNav';
@@ -35,6 +36,9 @@ export function AppShell() {
           tabIndex={-1}
           className="min-w-0 flex-1 px-5 pt-4 pb-[calc(68px+env(safe-area-inset-bottom)+1rem)] outline-none lg:p-0"
         >
+          <div className="mb-4 empty:hidden lg:mb-6">
+            <PwaBanners />
+          </div>
           <Suspense fallback={<PageLoader />}>
             <Outlet />
           </Suspense>

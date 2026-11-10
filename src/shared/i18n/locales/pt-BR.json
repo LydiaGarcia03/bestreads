@@ -446,6 +446,13 @@
       "pt-BR": "Português (Brasil)"
     }
   },
+  "pwa": {
+    "install": "Instalar app",
+    "offline": "Você está offline. As páginas já abertas continuam disponíveis; alterações e dados novos precisam de conexão.",
+    "updateReady": "Uma nova versão do Bestreads está pronta.",
+    "reload": "Recarregar",
+    "later": "Depois"
+  },
   "year": {
     "heading": "Meu Ano {{year}}",
     "open": "Abrir",

@@ -220,6 +220,7 @@ npm run lint       # ESLint
 npm run typecheck  # tsc --noEmit
 npm test           # Vitest
 npm run test:rules # Firestore rules tests on the emulator (needs Java 21+; project demo-bestreads)
+npm run generate-pwa-assets # regenerate the PWA icons in public/ from public/favicon.svg
 ```
 
 Run `lint`, `typecheck` and `test` before saying a task is done, and `test:rules` whenever `firestore.rules` changes (every rule change comes with a test in `tests/rules/`).
