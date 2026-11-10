@@ -12,7 +12,8 @@ service cloud.firestore {
     }
 
     // Admins are marked by an admins/{uid} document created by hand in the Firebase console.
-    // For moderation of public data only (Phase 6+); never grants access to users/{uid}/...
+    // For moderation of public data only: deleting public profiles, public ratings, follows and
+    // usernames. Never grants access to users/{uid}/...
     function isAdmin() {
       return request.auth != null
         && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
@@ -224,7 +225,8 @@ service cloud.firestore {
         && existsAfter(/databases/$(database)/documents/users/$(uid)/books/$(bookId))
         && bookAfterWrite(uid, bookId).ratingPublic == true
         && bookAfterWrite(uid, bookId).rating == request.resource.data.rating;
-      allow delete: if isOwner(uid);
+      // Admins remove public ratings when moderating; they never touch the private book.
+      allow delete: if isOwner(uid) || isAdmin();
     }
 
     // A username (src/features/social/username.ts): USERNAME_LIMITS, the allowed characters and
@@ -254,7 +256,8 @@ service cloud.firestore {
         && !exists(publicProfilePath(request.auth.uid))
         && getAfter(publicProfilePath(request.auth.uid)).data.username == username;
       allow update: if false;
-      // Moderation only (Phase 6.4).
+      // Never from the app: when an admin removes a profile, its username stays reserved (blocked), so
+      // nobody can take it again. Kept for cleanup by an admin only.
       allow delete: if isAdmin();
     }
 
@@ -278,7 +281,7 @@ service cloud.firestore {
       allow update: if isOwner(uid)
         && isValidPublicProfile(request.resource.data)
         && request.resource.data.username == resource.data.username;
-      // Moderation only (Phase 6.4).
+      // Moderation only: removing a profile. The owner can then choose a new username.
       allow delete: if isAdmin();
     }
 
@@ -302,7 +305,8 @@ service cloud.firestore {
         && exists(publicProfilePath(request.auth.uid))
         && exists(publicProfilePath(request.resource.data.followedUid));
       allow update: if false;
-      allow delete: if request.auth != null && resource.data.followerUid == request.auth.uid;
+      // The follower unfollows; admins remove a moderated profile's follows.
+      allow delete: if (request.auth != null && resource.data.followerUid == request.auth.uid) || isAdmin();
     }
 
     // admins/{uid}: a user can check whether they are an admin; nobody can write from the app.

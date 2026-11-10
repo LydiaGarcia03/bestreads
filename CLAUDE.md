@@ -96,11 +96,11 @@ Core features:
 | `users/{uid}/books/{bookId}/private/review` | review text | owner | owner |
 | `users/{uid}/books/{bookId}/private/cover` | personal cover (base64) | owner | owner |
 | `users/{uid}/shelves/{shelfId}` | custom shelf name and order | owner | owner |
-| `admins/{uid}` | admin marker (`createdAt`), created only in the Firebase console | owner | nobody (console only) |
+| `admins/{uid}` | admin marker (`createdAt`), created only in the Firebase console; admins may only delete public data (profiles, public ratings, follows, usernames), never read `users/...` | owner | nobody (console only) |
 | `usernames/{username}` | owning `uid`, `createdAt` (enforces unique usernames) | signed in, one at a time (no listing) | owner, create once, together with `public/{uid}`; admin delete |
-| `public/{uid}` | username (fixed), display name, photo; existing = the user has a public profile | signed in, one at a time (no listing) | owner (username never changes); admin delete |
-| `public/{uid}/ratings/{bookId}` | title, author, API cover, rating, date | signed in | owner |
-| `follows/{followerUid}_{followedUid}` | `followerUid`, `followedUid`, `createdAt` | signed in | follower creates (both users need a public profile, never yourself) and deletes; no edits |
+| `public/{uid}` | username (fixed), display name, photo; existing = the user has a public profile | signed in, one at a time (no listing) | owner (username never changes); admin delete (the username stays reserved) |
+| `public/{uid}/ratings/{bookId}` | title, author, API cover, rating, date | signed in | owner; admin delete |
+| `follows/{followerUid}_{followedUid}` | `followerUid`, `followedUid`, `createdAt` | signed in | follower creates (both users need a public profile, never yourself) and deletes; admin delete; no edits |
 
 `bookId` = Google Books volume id, or `ol-<id>` for Open Library, so the same book is never added twice.
 

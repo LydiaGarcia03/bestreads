@@ -39,4 +39,13 @@ export interface SocialRepository {
   listFollowing(uid: string): Promise<PublicProfile[]>;
   /** Public profiles following `uid` (at most `FOLLOW_LIST_LIMIT`); profiles removed since are skipped. */
   listFollowers(uid: string): Promise<PublicProfile[]>;
+  /** Whether `uid` is an admin (`admins/{uid}`, created in the Firebase console). */
+  isAdmin(uid: string): Promise<boolean>;
+  /** Moderation (admins only): deletes one public rating. The owner's private book is never touched. */
+  removePublicRating(uid: string, bookId: string): Promise<void>;
+  /**
+   * Moderation (admins only): deletes the public profile with its public ratings and follows (both ways).
+   * The username stays reserved, so nobody can take it again; the owner can choose a new one.
+   */
+  removePublicProfile(uid: string): Promise<void>;
 }

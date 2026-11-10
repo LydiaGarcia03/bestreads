@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Route, Routes } from 'react-router-dom';
 import { createTestProfile, createTestPublicRating, FakeSocialRepository, TEST_USER } from '@/test/fakes';
@@ -138,6 +138,96 @@ describe('PublicProfilePage', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent("Couldn't load this profile.");
     await user.click(screen.getByRole('button', { name: 'Try again' }));
     expect(await screen.findByRole('heading', { level: 1, name: 'Friendly Reader' })).toBeInTheDocument();
+  });
+
+  describe('moderation', () => {
+    const adminSocial = () => {
+      const social = new FakeSocialRepository([friend, me]);
+      social.admins.add(TEST_USER.uid);
+      social.ratings.set(friend.uid, [
+        createTestPublicRating({ bookId: 'b1', title: 'Dune' }),
+        createTestPublicRating({ bookId: 'b2', title: 'Emma' }),
+      ]);
+      return social;
+    };
+
+    it('is hidden from people who are not admins', async () => {
+      const social = new FakeSocialRepository([friend, me]);
+      social.ratings.set(friend.uid, [createTestPublicRating({ title: 'Dune' })]);
+      renderProfile('/u/friend', social);
+
+      expect(await screen.findByRole('heading', { level: 3, name: 'Dune' })).toBeInTheDocument();
+      expect(social.isAdmin).toHaveBeenCalledWith(TEST_USER.uid);
+      expect(screen.queryByRole('region', { name: 'Moderation' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /Remove/ })).not.toBeInTheDocument();
+    });
+
+    it('is not offered on your own profile', async () => {
+      const social = adminSocial();
+      renderProfile('/u/test_reader', social);
+
+      expect(await screen.findByText('This is your public profile.')).toBeInTheDocument();
+      expect(screen.queryByRole('region', { name: 'Moderation' })).not.toBeInTheDocument();
+    });
+
+    it('lets an admin remove one public rating after confirming', async () => {
+      const user = userEvent.setup();
+      const social = adminSocial();
+      renderProfile('/u/friend', social);
+
+      await user.click(await screen.findByRole('button', { name: 'Remove the public rating of Dune' }));
+      const confirm = screen.getByRole('group', { name: 'Remove the public rating of Dune' });
+      expect(within(confirm).getByText('Remove the public rating of Dune?')).toBeInTheDocument();
+      await user.click(within(confirm).getByRole('button', { name: 'Remove' }));
+
+      await waitFor(() => expect(screen.queryByRole('heading', { level: 3, name: 'Dune' })).not.toBeInTheDocument());
+      expect(screen.getByRole('heading', { level: 3, name: 'Emma' })).toBeInTheDocument();
+      expect(social.removePublicRating).toHaveBeenCalledWith(friend.uid, 'b1');
+    });
+
+    it('can be cancelled', async () => {
+      const user = userEvent.setup();
+      const social = adminSocial();
+      renderProfile('/u/friend', social);
+
+      await user.click(await screen.findByRole('button', { name: 'Remove the public rating of Dune' }));
+      await user.click(screen.getByRole('button', { name: 'Cancel' }));
+
+      expect(screen.getByRole('button', { name: 'Remove the public rating of Dune' })).toBeInTheDocument();
+      expect(social.removePublicRating).not.toHaveBeenCalled();
+    });
+
+    it('lets an admin remove the whole profile, which then reads as not found', async () => {
+      const user = userEvent.setup();
+      const social = adminSocial();
+      renderProfile('/u/friend', social);
+
+      const moderation = await screen.findByRole('region', { name: 'Moderation' });
+      await user.click(within(moderation).getByRole('button', { name: 'Remove the public profile of @friend' }));
+      expect(
+        within(moderation).getByText(
+          "Remove @friend's public profile, public ratings and follows? The username stays blocked; they can choose a new one.",
+        ),
+      ).toBeInTheDocument();
+      await user.click(within(moderation).getByRole('button', { name: 'Remove profile' }));
+
+      expect(await screen.findByRole('heading', { level: 1, name: 'Profile not found' })).toBeInTheDocument();
+      expect(social.removePublicProfile).toHaveBeenCalledWith(friend.uid);
+    });
+
+    it('says when removing fails', async () => {
+      const user = userEvent.setup();
+      const social = adminSocial();
+      social.removePublicProfile.mockRejectedValueOnce(new Error('denied'));
+      renderProfile('/u/friend', social);
+
+      const moderation = await screen.findByRole('region', { name: 'Moderation' });
+      await user.click(within(moderation).getByRole('button', { name: 'Remove the public profile of @friend' }));
+      await user.click(within(moderation).getByRole('button', { name: 'Remove profile' }));
+
+      expect(await within(moderation).findByRole('alert')).toHaveTextContent("Couldn't remove. Try again.");
+      expect(screen.getByRole('heading', { level: 1, name: 'Friendly Reader' })).toBeInTheDocument();
+    });
   });
 
   it('is translated', async () => {

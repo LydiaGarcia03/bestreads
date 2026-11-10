@@ -344,6 +344,18 @@
       "error": "Não foi possível carregar as avaliações dos seus amigos.",
       "empty": "Nenhuma avaliação ainda. Siga pessoas pelo @username para ver as avaliações que elas tornam públicas."
     },
+    "moderation": {
+      "title": "Moderação",
+      "hint": "Você é admin. Pode remover este perfil público ou qualquer avaliação pública dele. Bibliotecas privadas nunca ficam visíveis nem são alteradas.",
+      "removeProfile": "Remover perfil",
+      "removeProfileOf": "Remover o perfil público de {{username}}",
+      "removeProfileConfirm": "Remover o perfil público, as avaliações públicas e os follows de {{username}}? O username fica bloqueado; a pessoa pode escolher outro.",
+      "removeRating": "Remover",
+      "removeRatingOf": "Remover a avaliação pública de {{title}}",
+      "removeRatingConfirm": "Remover a avaliação pública de {{title}}?",
+      "removing": "Removendo…",
+      "error": "Não foi possível remover. Tente de novo."
+    },
     "people": {
       "following": "Seguindo",
       "followers": "Seguidores",

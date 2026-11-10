@@ -17,6 +17,7 @@ export const socialQueryKeys = {
   following: (uid: string) => ['social', 'following', uid] as const,
   followers: (uid: string) => ['social', 'followers', uid] as const,
   feed: (uid: string) => ['social', 'feed', uid] as const,
+  isAdmin: (uid: string) => ['social', 'isAdmin', uid] as const,
 };
 
 /** The signed-in user (`null` while auth is still loading). */

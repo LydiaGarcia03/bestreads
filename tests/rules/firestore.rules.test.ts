@@ -434,6 +434,65 @@ describe('public ratings listing', () => {
   });
 });
 
+describe('moderation by admins', () => {
+  const ADMIN = 'admin-uid';
+  const followPath = `follows/${OTHER}_${OWNER}`;
+
+  beforeEach(async () => {
+    await seed(`admins/${ADMIN}`, { createdAt: Timestamp.now() });
+    await seed('usernames/owner', { uid: OWNER, createdAt: Timestamp.now() });
+    await seed(`public/${OWNER}`, { username: 'owner', displayName: 'Owner', photoURL: null });
+    await seed(publicRatingPath(), { ...publicCopy(), ratedAt: Timestamp.now() });
+    await seed(followPath, { followerUid: OTHER, followedUid: OWNER, createdAt: Timestamp.now() });
+    await seed(`users/${OWNER}`, { ...userDoc(), createdAt: Timestamp.now() });
+    await seed(bookPath(), storedBook({ rating: 4.5, ratingPublic: true }));
+    await seed(`users/${OWNER}/books/${BOOK}/private/review`, { text: 'Only for me', updatedAt: Timestamp.now() });
+  });
+
+  it('lets an admin remove public ratings, follows, public profiles and usernames', async () => {
+    const db = as(ADMIN);
+    await assertSucceeds(getDocs(collection(db, `public/${OWNER}/ratings`)));
+    await assertSucceeds(deleteDoc(doc(db, publicRatingPath())));
+    await assertSucceeds(deleteDoc(doc(db, followPath)));
+    await assertSucceeds(deleteDoc(doc(db, `public/${OWNER}`)));
+    await assertSucceeds(deleteDoc(doc(db, 'usernames/owner')));
+  });
+
+  it('never lets anyone else remove them', async () => {
+    const db = as(OTHER);
+    await assertFails(deleteDoc(doc(db, publicRatingPath())));
+    await assertFails(deleteDoc(doc(as(OWNER), followPath)));
+    await assertFails(deleteDoc(doc(db, `public/${OWNER}`)));
+    await assertFails(deleteDoc(doc(db, 'usernames/owner')));
+  });
+
+  it('never gives an admin access to private data or edits of public data', async () => {
+    const db = as(ADMIN);
+    await assertFails(getDoc(doc(db, `users/${OWNER}`)));
+    await assertFails(getDoc(doc(db, bookPath())));
+    await assertFails(getDoc(doc(db, `users/${OWNER}/books/${BOOK}/private/review`)));
+    await assertFails(getDocs(collection(db, `users/${OWNER}/books`)));
+    await assertFails(updateDoc(doc(db, bookPath()), { ratingPublic: false }));
+    await assertFails(updateDoc(doc(db, `public/${OWNER}`), { displayName: 'Edited' }));
+    await assertFails(setDoc(doc(db, publicRatingPath()), publicCopy({ rating: 1 })));
+    await assertFails(getDocs(collection(db, 'public')));
+    await assertFails(getDocs(collection(db, 'usernames')));
+  });
+
+  it('keeps a removed username blocked, while the owner can choose a new one', async () => {
+    await deleteDoc(doc(as(ADMIN), `public/${OWNER}`));
+    const claim = (username: string) => {
+      const db = as(OWNER);
+      const batch = writeBatch(db);
+      batch.set(doc(db, `usernames/${username}`), { uid: OWNER, createdAt: serverTimestamp() });
+      batch.set(doc(db, `public/${OWNER}`), { username, displayName: 'Owner', photoURL: null });
+      return batch.commit();
+    };
+    await assertFails(claim('owner'));
+    await assertSucceeds(claim('owner_2'));
+  });
+});
+
 describe('everything else', () => {
   it('is closed by default', async () => {
     await assertFails(setDoc(doc(as(OWNER), 'anything/else'), { a: 1 }));

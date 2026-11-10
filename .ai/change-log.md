@@ -13,6 +13,14 @@ Format:
 ---
 
 ## 2026-11-10
+- docs(ai): `firestore.rules` with admin moderation published in the Firebase console.
+- feat(social): admin moderation of public data (Phase 6.4).
+  - `firestore.rules`: admins (`isAdmin()`) may also delete `public/{uid}/ratings/{bookId}` and `follows/{followId}`; comments on `usernames` and `public/{uid}` deletion. Admins still can't read or write `users/{uid}/...`, edit public data or list profiles and usernames. Rules tests: admin deletes, nobody else can, no access to private data, a removed username stays blocked while the owner can claim a new one (34 tests).
+  - Data: `SocialRepository` gains `isAdmin` (`admins/{uid}`), `removePublicRating` and `removePublicProfile` (deletes public ratings, follows both ways in batches of 400, then `public/{uid}`; `usernames/{username}` is kept so the name stays blocked).
+  - Hooks: `useModeration.ts` (`useIsAdmin`, 30-minute `staleTime`; `useRemovePublicRating` drops the rating from the cached list and refreshes feeds; `useRemovePublicProfile` marks the profile as not found and refreshes counts, lists and feeds).
+  - UI: on someone else's public profile, admins see a "Moderation" section with "Remove profile" and a "Remove" action under each public rating, both confirmed first (`ConfirmAction`, `Moderation.tsx`); `PublicRatingList` takes an optional `renderAction`. i18n `social.moderation.*` (en, pt-BR).
+  - Tests: repository (admin check, rating removal, chunked profile removal), profile screen moderation (hidden for non-admins and on one's own profile, remove a rating, cancel, remove a profile, error). 610 tests pass. Initial JS: 135.2 KB gzip (+0.3 KB).
+  - `CLAUDE.md` data model: admin delete on public ratings and follows; a removed profile's username stays reserved.
 - feat(social): Friends screen and friends feed (Phase 6.3).
   - Domain: `src/features/social/feed.ts` (`buildFeed` merges followed users' ratings newest first, undated last; 5 ratings read per followed user, 20 items on Friends, 5 on Home); `FOLLOW_LIST_LIMIT` (100) in `follows.ts`.
   - Data: `SocialRepository` gains `listFollowing` and `listFollowers` (`follows` filtered by `followerUid` / `followedUid`, equality only, limit 100, then each `public/{uid}`; removed profiles skipped). No rule change: listing `follows` was already allowed for signed-in users.

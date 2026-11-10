@@ -31,6 +31,7 @@ vi.mock('firebase/firestore', () => {
     limit: vi.fn((count: number) => ({ limit: count })),
     documentId: vi.fn(() => '__name__'),
     runTransaction: vi.fn(),
+    writeBatch: vi.fn(),
     serverTimestamp: vi.fn(() => 'SERVER_TIMESTAMP'),
   };
 });
@@ -173,6 +174,47 @@ describe('createFirestoreSocialRepository', () => {
     ]);
     expect(mocked.where).toHaveBeenCalledWith('followedUid', '==', 'u1');
     expect(mocked.doc).toHaveBeenCalledWith(db, 'public', 'u3');
+  });
+
+  it('checks the admin marker', async () => {
+    mocked.getDoc.mockResolvedValueOnce(snapshot({ createdAt: 'then' })).mockResolvedValueOnce(snapshot(undefined));
+    const repository = createFirestoreSocialRepository(db);
+
+    expect(await repository.isAdmin('u1')).toBe(true);
+    expect(mocked.doc).toHaveBeenCalledWith(db, 'admins', 'u1');
+    expect(await repository.isAdmin('u2')).toBe(false);
+  });
+
+  it('removes one public rating', async () => {
+    await createFirestoreSocialRepository(db).removePublicRating('u1', 'b1');
+    expect(mocked.deleteDoc).toHaveBeenCalledWith({ path: 'public/u1/ratings/b1' });
+  });
+
+  it('removes a profile after its ratings and follows, in chunks', async () => {
+    const batchDelete = vi.fn();
+    const commit = vi.fn(async () => {});
+    mocked.writeBatch.mockReturnValue({ delete: batchDelete, commit } as unknown as firestore.WriteBatch);
+    const docs = (count: number, prefix: string) =>
+      Array.from({ length: count }, (_, index) => ({ ref: { path: `${prefix}/${index}` } }));
+    const result = (items: { ref: { path: string } }[]) =>
+      ({ docs: items, empty: items.length === 0, size: items.length }) as unknown as Awaited<
+        ReturnType<typeof firestore.getDocs>
+      >;
+    mocked.getDocs
+      .mockResolvedValueOnce(result(docs(400, 'ratings'))) // a full chunk: ask again
+      .mockResolvedValueOnce(result(docs(3, 'ratings')))
+      .mockResolvedValueOnce(result(docs(2, 'followers')))
+      .mockResolvedValueOnce(result([]));
+
+    await createFirestoreSocialRepository(db).removePublicProfile('u1');
+
+    expect(mocked.collection).toHaveBeenCalledWith(db, 'public', 'u1', 'ratings');
+    expect(mocked.where).toHaveBeenCalledWith('followedUid', '==', 'u1');
+    expect(mocked.where).toHaveBeenCalledWith('followerUid', '==', 'u1');
+    expect(batchDelete).toHaveBeenCalledTimes(405);
+    expect(commit).toHaveBeenCalledTimes(3);
+    expect(mocked.deleteDoc).toHaveBeenCalledWith({ path: 'public/u1' });
+    expect(mocked.deleteDoc.mock.invocationCallOrder[0]).toBeGreaterThan(Math.max(...commit.mock.invocationCallOrder));
   });
 
   it('refuses a second username without writing', async () => {

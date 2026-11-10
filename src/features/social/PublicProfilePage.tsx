@@ -4,11 +4,13 @@ import { Button } from '@/shared/ui/Button';
 import { PageHeading } from '@/shared/ui/PageHeading';
 import { Avatar } from './components/Avatar';
 import { FollowButton } from './components/FollowButton';
+import { ModerationPanel, RemoveRatingAction } from './components/Moderation';
 import { PublicRatingList } from './components/PublicRatingList';
 import { canFollow } from './follows';
 import { FRIENDS_PATH } from './profilePath';
 import { formatUsername, type PublicProfile } from './publicProfile';
 import { useFollowCounts } from './useFollows';
+import { useIsAdmin } from './useModeration';
 import { useProfileByUsername, useSignedInUser } from './usePublicProfile';
 import { validateUsername } from './username';
 
@@ -41,14 +43,28 @@ export function PublicProfilePage() {
   }
   if (!profile.data) return <ProfileNotFound username={username} />;
 
+  return <ProfileContent profile={profile.data} />;
+}
+
+function ProfileContent({ profile }: { profile: PublicProfile }) {
+  const { t } = useTranslation();
+  const viewer = useSignedInUser();
+  const isAdmin = useIsAdmin();
+  // Admins moderate other people's public data, never their own profile.
+  const canModerate = isAdmin.data === true && viewer !== null && viewer.uid !== profile.uid;
+
   return (
     <div className="flex flex-col gap-8">
-      <ProfileHeader profile={profile.data} />
+      <ProfileHeader profile={profile} />
+      {canModerate && <ModerationPanel profile={profile} />}
       <section aria-labelledby="public-ratings" className="flex flex-col gap-4">
         <h2 id="public-ratings" className="text-lg font-bold">
           {t('social.profile.ratings')}
         </h2>
-        <PublicRatingList uid={profile.data.uid} />
+        <PublicRatingList
+          uid={profile.uid}
+          renderAction={canModerate ? (rating) => <RemoveRatingAction uid={profile.uid} rating={rating} /> : undefined}
+        />
       </section>
     </div>
   );

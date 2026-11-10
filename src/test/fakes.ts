@@ -332,6 +332,21 @@ export class FakeSocialRepository implements SocialRepository {
   listFollowing = vi.fn(async (uid: string) => this.profilesFollowing(uid, 'following'));
 
   listFollowers = vi.fn(async (uid: string) => this.profilesFollowing(uid, 'followers'));
+
+  /** Uids with an `admins/{uid}` marker. */
+  readonly admins = new Set<string>();
+
+  isAdmin = vi.fn(async (uid: string) => this.admins.has(uid));
+
+  removePublicRating = vi.fn(async (uid: string, bookId: string) => {
+    this.ratings.set(uid, (this.ratings.get(uid) ?? []).filter((rating) => rating.bookId !== bookId));
+  });
+
+  removePublicProfile = vi.fn(async (uid: string) => {
+    this.ratings.delete(uid);
+    [...this.follows].filter((pair) => pair.split('_').includes(uid)).forEach((pair) => this.follows.delete(pair));
+    this.profiles.delete(uid);
+  });
 }
 
 export function createTestProfile(overrides: Partial<PublicProfile> = {}): PublicProfile {

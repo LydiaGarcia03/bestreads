@@ -16,8 +16,10 @@ import {
   startAfter,
   Timestamp,
   where,
+  writeBatch,
   type DocumentData,
   type Firestore,
+  type Query,
 } from 'firebase/firestore';
 import { getFirebaseApp } from '@/shared/firebase/app';
 import { FOLLOW_LIST_LIMIT, followId } from './follows';
@@ -29,6 +31,10 @@ const USERNAMES = 'usernames';
 const PUBLIC = 'public';
 const RATINGS = 'ratings';
 const FOLLOWS = 'follows';
+const ADMINS = 'admins';
+
+/** Documents deleted per batch (Firestore allows 500 writes per batch). */
+const DELETE_CHUNK_SIZE = 400;
 
 /** Firestore timestamps → `Date`, so the domain never sees SDK types. */
 function withDates(data: DocumentData): Record<string, unknown> {
@@ -47,6 +53,18 @@ export function createFirestoreSocialRepository(db: Firestore = getFirestore(get
   const getPublicProfile = async (uid: string) => {
     const snapshot = await getDoc(profileRef(uid));
     return snapshot.exists() ? readPublicProfile(uid, snapshot.data()) : null;
+  };
+
+  /** Deletes every document `source` returns, one batch per chunk. */
+  const deleteAll = async (source: Query) => {
+    for (;;) {
+      const snapshot = await getDocs(query(source, limit(DELETE_CHUNK_SIZE)));
+      if (snapshot.empty) return;
+      const batch = writeBatch(db);
+      snapshot.docs.forEach((document) => batch.delete(document.ref));
+      await batch.commit();
+      if (snapshot.size < DELETE_CHUNK_SIZE) return;
+    }
   };
 
   /** Profiles on the other side of `uid`'s follows. Equality filter only, so no composite index. */
@@ -126,5 +144,22 @@ export function createFirestoreSocialRepository(db: Firestore = getFirestore(get
     listFollowing: (uid) => listFollowProfiles('followerUid', uid),
 
     listFollowers: (uid) => listFollowProfiles('followedUid', uid),
+
+    async isAdmin(uid) {
+      return (await getDoc(doc(db, ADMINS, uid))).exists();
+    },
+
+    async removePublicRating(uid, bookId) {
+      await deleteDoc(doc(db, PUBLIC, uid, RATINGS, bookId));
+    },
+
+    async removePublicProfile(uid) {
+      // Ratings and follows first, the profile last: if this stops halfway, the profile is still
+      // there to find and remove again.
+      await deleteAll(collection(db, PUBLIC, uid, RATINGS));
+      await deleteAll(query(follows, where('followedUid', '==', uid)));
+      await deleteAll(query(follows, where('followerUid', '==', uid)));
+      await deleteDoc(profileRef(uid));
+    },
   };
 }

@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { BookCover, buildBookPath, StarRating } from '@/features/books/lazy';
@@ -5,8 +6,14 @@ import { Button } from '@/shared/ui/Button';
 import type { PublicRating } from '../publicRating';
 import { usePublicRatings } from '../usePublicRatings';
 
+interface PublicRatingListProps {
+  uid: string;
+  /** Extra controls under each rating (e.g. moderation). */
+  renderAction?: (rating: PublicRating) => ReactNode;
+}
+
 /** `uid`'s public ratings: a list on phones, a cover grid on desktop, with "Load more". */
-export function PublicRatingList({ uid }: { uid: string }) {
+export function PublicRatingList({ uid, renderAction }: PublicRatingListProps) {
   const { t } = useTranslation();
   const ratings = usePublicRatings(uid);
 
@@ -33,8 +40,9 @@ export function PublicRatingList({ uid }: { uid: string }) {
     <div className="flex flex-col gap-6">
       <ul className="flex flex-col divide-y divide-border lg:grid lg:grid-cols-[repeat(auto-fill,minmax(8.5rem,1fr))] lg:gap-x-6 lg:gap-y-8 lg:divide-y-0">
         {ratings.data.map((rating) => (
-          <li key={rating.bookId}>
+          <li key={rating.bookId} className="flex flex-col gap-2">
             <RatedBook rating={rating} />
+            {renderAction && <div className="pb-3 lg:pb-0">{renderAction(rating)}</div>}
           </li>
         ))}
       </ul>

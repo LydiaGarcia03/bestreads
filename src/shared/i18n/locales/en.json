@@ -344,6 +344,18 @@
       "error": "Couldn't load your friends' ratings.",
       "empty": "No ratings yet. Follow people by @username to see the ratings they make public."
     },
+    "moderation": {
+      "title": "Moderation",
+      "hint": "You're an admin. You can remove this public profile or any of its public ratings. Private libraries are never visible or touched.",
+      "removeProfile": "Remove profile",
+      "removeProfileOf": "Remove the public profile of {{username}}",
+      "removeProfileConfirm": "Remove {{username}}'s public profile, public ratings and follows? The username stays blocked; they can choose a new one.",
+      "removeRating": "Remove",
+      "removeRatingOf": "Remove the public rating of {{title}}",
+      "removeRatingConfirm": "Remove the public rating of {{title}}?",
+      "removing": "Removing…",
+      "error": "Couldn't remove. Try again."
+    },
     "people": {
       "following": "Following",
       "followers": "Followers",

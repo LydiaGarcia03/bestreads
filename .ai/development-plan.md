@@ -5,7 +5,7 @@ Each phase lists its tasks and a "Done when" checklist. Mark tasks with `[x]` as
 
 Status legend: `[ ]` not started · `[~]` in progress · `[x]` done
 
-Current phase: **Phase 6 — Social** (6.1 done; 6.2 and 6.3 built, waiting for a browser check with two accounts; 6.4 moderation next; Phases 2–5 are done and checked at 390px in the dark theme; the light theme check is pending)
+Current phase: **Phase 6 — Social** (6.1 done; 6.2–6.4 built and rules published, waiting for a browser check with two accounts and the admin account; Phase 7 in progress; Phases 2–5 are done and checked at 390px in the dark theme; the light theme check is pending)
 
 ---
 
@@ -190,7 +190,12 @@ Decisions:
 - [ ] Checked in the browser while signed in (two accounts: feed, lists, Home side column at 1280px; Friends at 390px)
 
 ### 6.4 Moderation
-- [ ] Admin moderation of public data (usernames, public profiles, public ratings) using `isAdmin()` from `firestore.rules`; admins never get access to `users/{uid}/...`
+- [x] Admin moderation of public data (usernames, public profiles, public ratings) using `isAdmin()` from `firestore.rules`; admins never get access to `users/{uid}/...`
+  - On someone else's public profile, an admin sees a "Moderation" section ("Remove profile") and "Remove" under each public rating, both confirmed first.
+  - Removing a profile deletes its public ratings, its follows (both ways) and `public/{uid}`; `usernames/{username}` stays, so the name is blocked for good and the owner must choose a new one.
+  - Known limit: a removed rating's private book keeps `ratingPublic: true` (admins can't write `users/...`); the copy comes back if the owner saves that rating again. No ban: the owner can claim a new username and publish again.
+- [x] Publish the updated `firestore.rules` in the Firebase console
+- [ ] Checked in the browser with the admin account (remove a rating, remove a test profile)
 
 ---
 
