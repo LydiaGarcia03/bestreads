@@ -1,5 +1,5 @@
 import { createTestBook } from '@/test/fakes';
-import { fillMissingCovers, uniqueById } from './searchResults';
+import { fillMissingCovers, uniqueById } from './catalogResults';
 
 describe('fillMissingCovers', () => {
   it('uses the Open Library ISBN cover when a book has none', () => {

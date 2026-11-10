@@ -7,6 +7,11 @@
     <meta name="theme-color" content="#141414" media="(prefers-color-scheme: dark)" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>Bestreads</title>
+    <!-- Open the connections the first search needs while the app loads (book APIs via CORS fetch, then covers). -->
+    <link rel="preconnect" href="https://www.googleapis.com" crossorigin />
+    <link rel="preconnect" href="https://openlibrary.org" crossorigin />
+    <link rel="preconnect" href="https://books.google.com" />
+    <link rel="preconnect" href="https://covers.openlibrary.org" />
     <script>
       // Apply a manual theme before first paint to avoid a light flash. Mirrors applyTheme().
       try {

@@ -9,6 +9,8 @@ const VOLUME = {
     description: '<p>A lone <i>astronaut</i>.</p>',
     pageCount: 476,
     publishedDate: '2021-05-04',
+    categories: ['Fiction / Science Fiction / General'],
+    ratingsCount: 87,
     industryIdentifiers: [
       { type: 'ISBN_10', identifier: '0593135202' },
       { type: 'ISBN_13', identifier: '9780593135204' },
@@ -28,10 +30,13 @@ describe('mapGoogleVolume', () => {
       subtitle: 'A Novel',
       authors: ['Andy Weir'],
       coverUrl: 'https://books.google.com/thumb?id=abc&zoom=1&source=gbs_api',
-      description: 'A lone astronaut .',
+      description: 'A lone *astronaut*.',
       pageCount: 476,
       isbn: '9780593135204',
       publishedYear: 2021,
+      publishedDate: '2021-05-04',
+      categories: ['Fiction', 'Science Fiction'],
+      popularity: 87,
       source: 'googleBooks',
     });
   });
@@ -60,6 +65,9 @@ describe('mapGoogleVolume', () => {
       pageCount: null,
       isbn: null,
       publishedYear: null,
+      publishedDate: null,
+      categories: [],
+      popularity: 0,
       source: 'googleBooks',
     });
   });
