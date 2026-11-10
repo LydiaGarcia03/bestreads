@@ -37,6 +37,10 @@ const PUBLIC = 'public';
 const RATINGS = 'ratings';
 /** Firestore's limit of writes per batch. */
 const MAX_BATCH_WRITES = 500;
+/** Volumes of one series kept by a reader (long series have dozens). */
+const SERIES_BOOKS_LIMIT = 200;
+/** Books read to suggest series names; enough for a large library, loaded only when editing a series. */
+const SERIES_NAMES_LIMIT = 500;
 
 function readShelf(id: string, data: DocumentData): Shelf {
   return {
@@ -154,6 +158,17 @@ export function createFirestoreLibraryRepository(db: Firestore = getFirestore(ge
       // An aggregation: billed as one read per 1,000 books counted, without downloading them.
       const snapshot = await getCountFromServer(booksOn(uid, filter));
       return snapshot.data().count;
+    },
+
+    async listSeriesBooks(uid, name) {
+      const snapshot = await getDocs(query(booksOf(uid), where('series.name', '==', name), limit(SERIES_BOOKS_LIMIT)));
+      return snapshot.docs.map((document) => toBook(document.id, document.data()));
+    },
+
+    async listSeriesNames(uid) {
+      // Books with a series only ('!=' skips documents without the field); single-field index, no composite.
+      const snapshot = await getDocs(query(booksOf(uid), where('series', '!=', null), limit(SERIES_NAMES_LIMIT)));
+      return snapshot.docs.map((document) => readLibraryBook(document.id, document.data()).series?.name ?? '');
     },
 
     async listShelves(uid) {

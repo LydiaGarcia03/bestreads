@@ -69,15 +69,27 @@ service cloud.firestore {
           && (progress.unit == 'pages' || progress.value <= 100));
     }
 
+    // A book's series (src/features/books/series.ts, SERIES_LIMITS), or null when not in one.
+    function isValidSeries(series) {
+      return series == null
+        || (series is map
+          && series.keys().hasOnly(['name', 'volume'])
+          && series.keys().hasAll(['name', 'volume'])
+          && series.name is string && series.name.size() > 0 && series.name.size() <= 100
+          && (series.volume == null
+            || (series.volume is number && series.volume >= 0 && series.volume <= 1000)));
+    }
+
     function isValidBook(data) {
       let fields = ['title', 'subtitle', 'authors', 'coverUrl', 'description', 'pageCount', 'isbn',
         'publishedYear', 'source', 'status', 'shelfIds', 'rating', 'ratingPublic', 'progress', 'reads',
         'addedAt', 'updatedAt'];
-      // Optional: books saved before personal covers existed don't have it.
-      let optional = ['hasPersonalCover'];
+      // Optional: books saved before personal covers and series existed don't have them.
+      let optional = ['hasPersonalCover', 'series'];
       return data.keys().hasOnly(fields.concat(optional))
         && data.keys().hasAll(fields)
         && (!('hasPersonalCover' in data) || data.hasPersonalCover is bool)
+        && (!('series' in data) || isValidSeries(data.series))
         && data.title is string && data.title.size() > 0 && data.title.size() <= 300
         && isNullableString(data.subtitle, 300)
         && data.authors is list && data.authors.size() <= 20

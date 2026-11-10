@@ -43,6 +43,10 @@ export interface LibraryRepository {
   listBooks(uid: string, options: ListBooksOptions): Promise<LibraryBook[]>;
   /** How many books are on a shelf. */
   countBooks(uid: string, filter: ShelfFilter): Promise<number>;
+  /** The owner's books in the series named exactly `name`. */
+  listSeriesBooks(uid: string, name: string): Promise<LibraryBook[]>;
+  /** Series names used in the owner's library (for suggestions; may repeat). */
+  listSeriesNames(uid: string): Promise<string[]>;
 
   /** The user's custom shelves, in their order. */
   listShelves(uid: string): Promise<Shelf[]>;

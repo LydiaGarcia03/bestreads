@@ -168,6 +168,18 @@ describe('users/{uid}/books/{bookId}', () => {
     await assertSucceeds(setDoc(doc(db, bookPath(OWNER, 'e')), bookDoc({ progress: { unit: 'pages', value: 120 } })));
   });
 
+  it('accepts an optional, valid series', async () => {
+    const db = as(OWNER);
+    await assertSucceeds(setDoc(doc(db, bookPath(OWNER, 'a')), bookDoc({ series: { name: 'Dune', volume: 1 } })));
+    await assertSucceeds(setDoc(doc(db, bookPath(OWNER, 'b')), bookDoc({ series: { name: 'Discworld', volume: 2.5 } })));
+    await assertSucceeds(setDoc(doc(db, bookPath(OWNER, 'c')), bookDoc({ series: { name: 'Saga', volume: null } })));
+    await assertSucceeds(setDoc(doc(db, bookPath(OWNER, 'd')), bookDoc({ series: null })));
+    await assertFails(setDoc(doc(db, bookPath(OWNER, 'e')), bookDoc({ series: { name: '', volume: 1 } })));
+    await assertFails(setDoc(doc(db, bookPath(OWNER, 'f')), bookDoc({ series: { name: 'Dune', volume: -1 } })));
+    await assertFails(setDoc(doc(db, bookPath(OWNER, 'g')), bookDoc({ series: { name: 'Dune', volume: 1, note: 'x' } })));
+    await assertFails(setDoc(doc(db, bookPath(OWNER, 'h')), bookDoc({ series: 'Dune' })));
+  });
+
   it('keeps addedAt and accepts the optional personal cover flag', async () => {
     await seed(bookPath(), storedBook());
     const db = as(OWNER);

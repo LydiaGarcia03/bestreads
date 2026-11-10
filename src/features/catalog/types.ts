@@ -52,6 +52,8 @@ export interface CatalogProvider {
   getBook(bookId: string, signal?: AbortSignal): Promise<CatalogBook | null>;
   /** Books many people are reading now, most popular first (empty when the API has no such list). */
   popular(limit: number, signal?: AbortSignal): Promise<CatalogBook[]>;
+  /** Books of the series named `name` (empty when the API has no series data). */
+  seriesBooks(name: string, signal?: AbortSignal): Promise<CatalogBook[]>;
 }
 
 /** Thrown by providers when the API can't be reached or answers with an error. */

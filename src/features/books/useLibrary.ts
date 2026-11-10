@@ -14,6 +14,9 @@ export const libraryQueryKeys = {
   count: (uid: string, shelf: string) => ['library', uid, 'count', shelf] as const,
   review: (uid: string, bookId: string) => ['library', uid, 'review', bookId] as const,
   cover: (uid: string, bookId: string) => ['library', uid, 'cover', bookId] as const,
+  /** The owner's books in one series; `series` is a `seriesKey`. */
+  series: (uid: string, series: string) => ['library', uid, 'series', series] as const,
+  seriesNames: (uid: string) => ['library', uid, 'seriesNames'] as const,
   shelves: (uid: string) => ['library', uid, 'shelves'] as const,
 };
 
@@ -28,9 +31,9 @@ export function requireUid(uid: string | null): string {
   return uid;
 }
 
-const SHELF_CONTENT_QUERIES = new Set(['list', 'count']);
+const SHELF_CONTENT_QUERIES = new Set(['list', 'count', 'series', 'seriesNames']);
 
-/** Shelf lists and counts show a book's new status, shelves or removal on the next visit. */
+/** Shelf lists, counts and series show a book's new status, shelves, series or removal on the next visit. */
 export function invalidateLists(queryClient: QueryClient, uid: string) {
   return queryClient.invalidateQueries({
     queryKey: libraryQueryKeys.all(uid),
@@ -108,7 +111,7 @@ export function useUpdateBook() {
     onError: (_error, _variables, context) => context?.undo(),
     onSuccess: async (_result, { patch }) => {
       // Moving between shelves changes which lists hold the book, so those are fetched again.
-      if (patch.status || patch.shelfIds) await invalidateLists(queryClient, requireUid(uid));
+      if (patch.status || patch.shelfIds || 'series' in patch) await invalidateLists(queryClient, requireUid(uid));
     },
   });
 }

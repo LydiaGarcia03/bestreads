@@ -24,6 +24,8 @@ import type { CatalogBook, CatalogProvider, CatalogSearchResult } from './types'
 export const SEARCH_PAGE_SIZE = 12;
 /** Open Library documents requested per result shown, so ranking has enough to choose from. */
 const OPEN_LIBRARY_CANDIDATES_PER_RESULT = 3;
+/** Most volumes listed for one series (very long series have a few dozen). */
+const SERIES_BOOKS_LIMIT = 60;
 /**
  * Supplementary APIs (Open Library) still running this long after the search started are dropped,
  * once the primary (Google) has answered. Measured: Open Library ~0.25–0.5 s, Google ~0.5–1.6 s.
@@ -71,8 +73,9 @@ export function createGoogleBooksProvider({ apiKey, fetchFn = defaultFetch }: Go
       return mapGoogleVolume(await fetchJsonOrNull(fetchFn, url, signal));
     },
 
-    // Google Books has no popularity list.
+    // Google Books has no popularity list, and only opaque series ids.
     popular: async () => [],
+    seriesBooks: async () => [],
   };
 }
 
@@ -116,6 +119,14 @@ export function createOpenLibraryProvider({ fetchFn = defaultFetch }: { fetchFn?
       const params = new URLSearchParams({ limit: String(limit) });
       const response = await fetchJson(fetchFn, `${OPEN_LIBRARY_TRENDING_URL}?${params.toString()}`, signal);
       return mapOpenLibraryTrending(response);
+    },
+
+    async seriesBooks(name, signal) {
+      // A quoted phrase, with Solr's special characters removed from the name.
+      const phrase = name.replace(/["\\]/g, ' ').trim();
+      if (!phrase) return [];
+      const response = await searchDocs(`series_name:"${phrase}"`, 0, SERIES_BOOKS_LIMIT, signal);
+      return mapOpenLibraryResponse(response);
     },
   };
 }
@@ -232,6 +243,10 @@ export function createMergedProvider(
       const lists = await Promise.all(providers.map((provider) => provider.popular(limit, signal)));
       return mergeResultLists(lists).slice(0, limit);
     },
+
+    async seriesBooks(name, signal) {
+      return mergeResultLists(await Promise.all(providers.map((provider) => provider.seriesBooks(name, signal))));
+    },
   };
 }
 
@@ -266,6 +281,10 @@ export function withResultCleanup(provider: CatalogProvider, describe?: Descript
 
     async popular(limit, signal) {
       return fillMissingCovers(uniqueById(await provider.popular(limit, signal)));
+    },
+
+    async seriesBooks(name, signal) {
+      return fillMissingCovers(uniqueById(await provider.seriesBooks(name, signal)));
     },
   };
 }

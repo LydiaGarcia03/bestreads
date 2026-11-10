@@ -122,7 +122,10 @@
     "empty": "Ainda não há livros nesta estante.",
     "unknownShelf": "Estante não encontrada",
     "unknownShelfHint": "Esta estante não existe mais. Escolha outra acima.",
-    "progress": "{{value}}% lido"
+    "progress": "{{value}}% lido",
+    "seriesCount_one": "{{count}} livro nesta estante",
+    "seriesCount_other": "{{count}} livros nesta estante",
+    "seriesVolume": "Livro {{volume}}"
   },
   "progress": {
     "title": "Progresso",
@@ -158,6 +161,40 @@
     "remove": "Remover",
     "addPastRead": "+ Adicionar leitura anterior",
     "finishBeforeStart": "A data de fim não pode ser antes da data de início."
+  },
+  "series": {
+    "label": "Série",
+    "nameAndVolume": "{{name}} · Livro {{volume}}",
+    "edit": "Editar",
+    "add": "+ Adicionar a uma série",
+    "formLabel": "Série",
+    "name": "Nome da série",
+    "volume": "Livro nº",
+    "save": "Salvar",
+    "remove": "Não faz parte de série",
+    "authorAndCount_one": "{{author}} · {{count}} livro",
+    "authorAndCount_other": "{{author}} · {{count}} livros",
+    "count_one": "{{count}} livro",
+    "count_other": "{{count}} livros",
+    "progress": "{{read}} lidos · {{reading}} lendo",
+    "toGo": "faltam {{count}}",
+    "loadingVolumes": "Procurando os outros livros da série…",
+    "reading": "lendo",
+    "addShort": "+ Adicionar",
+    "addVolume": "Adicionar {{title}} em Quero ler",
+    "addAll_one": "Adicionar o livro que falta em Quero ler",
+    "addAll_other": "Adicionar os {{count}} livros que faltam em Quero ler",
+    "adding": "Adicionando…",
+    "states": {
+      "read": "Lido",
+      "reading": "Lendo agora",
+      "unread": "Ainda não lido",
+      "notInLibrary": "Fora da sua biblioteca"
+    },
+    "errors": {
+      "nameTooLong": "Use no máximo {{max}} caracteres.",
+      "invalidVolume": "Use um número de 0 a 1000, como 3 ou 2,5."
+    }
   },
   "cover": {
     "add": "Trocar capa (só você vê)",

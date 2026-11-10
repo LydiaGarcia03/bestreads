@@ -158,4 +158,33 @@ describe('ShelvesPage', () => {
     expect(await screen.findByRole('link', { name: 'Lendo agora · 1' })).toBeInTheDocument();
     expect(await screen.findByRole('region', { name: 'Suas estantes' })).toBeInTheDocument();
   });
+
+  it('groups books of a series in volume order, collapsible', async () => {
+    const user = userEvent.setup();
+    const library = new FakeLibraryRepository([
+      createTestLibraryBook({ id: 'd2', title: 'Dune Messiah', status: 'read', series: { name: 'Dune', volume: 2 } }),
+      createTestLibraryBook({ id: 'e1', title: 'Emma', status: 'read' }),
+      createTestLibraryBook({ id: 'd1', title: 'Dune', status: 'read', series: { name: 'Dune', volume: 1 } }),
+    ]);
+    renderWithProviders(
+      <Routes>
+        <Route path="/shelves" element={<ShelvesPage />} />
+      </Routes>,
+      { route: '/shelves?shelf=read', library },
+    );
+
+    const group = await screen.findByRole('region', { name: 'Dune' });
+    const toggle = within(group).getByRole('button', { name: /Dune 2 books on this shelf/ });
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    expect(within(group).getAllByRole('heading', { level: 3 }).map((heading) => heading.textContent)).toEqual([
+      'Dune',
+      'Dune Messiah',
+    ]);
+    expect(within(group).getByText('Book 2')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 3, name: 'Emma' })).toBeInTheDocument();
+
+    await user.click(toggle);
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    expect(within(group).queryByRole('heading', { level: 3 })).not.toBeInTheDocument();
+  });
 });

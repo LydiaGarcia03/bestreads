@@ -98,6 +98,10 @@ export class FakeCatalog implements CatalogProvider {
   /** Popular books: `results` too, unless a test sets `popularBooks`. */
   popularBooks: CatalogBook[] | null = null;
   popular = vi.fn(async (limit: number, _signal?: AbortSignal) => (this.popularBooks ?? this.results).slice(0, limit));
+  /** Books of a series: those in `results` whose series has that name. */
+  seriesBooks = vi.fn(async (name: string, _signal?: AbortSignal) =>
+    this.results.filter((book) => book.series?.name === name),
+  );
 }
 
 export function createTestBook(overrides: Partial<CatalogBook> = {}): CatalogBook {
@@ -189,6 +193,14 @@ export class FakeLibraryRepository implements LibraryRepository {
 
   countBooks = vi.fn(
     async (_uid: string, filter: ShelfFilter) => [...this.books.values()].filter((book) => isOnShelf(book, filter)).length,
+  );
+
+  listSeriesBooks = vi.fn(async (_uid: string, name: string) =>
+    [...this.books.values()].filter((book) => book.series?.name === name),
+  );
+
+  listSeriesNames = vi.fn(async (_uid: string) =>
+    [...this.books.values()].flatMap((book) => (book.series ? [book.series.name] : [])),
   );
 
   listShelves = vi.fn(async (_uid: string) => sortShelves([...this.shelves.values()]));

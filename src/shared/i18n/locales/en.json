@@ -122,7 +122,10 @@
     "empty": "No books on this shelf yet.",
     "unknownShelf": "Shelf not found",
     "unknownShelfHint": "This shelf doesn't exist anymore. Pick another one above.",
-    "progress": "{{value}}% read"
+    "progress": "{{value}}% read",
+    "seriesCount_one": "{{count}} book on this shelf",
+    "seriesCount_other": "{{count}} books on this shelf",
+    "seriesVolume": "Book {{volume}}"
   },
   "progress": {
     "title": "Progress",
@@ -158,6 +161,40 @@
     "remove": "Remove",
     "addPastRead": "+ Add a past read",
     "finishBeforeStart": "The finish date can't be before the start date."
+  },
+  "series": {
+    "label": "Series",
+    "nameAndVolume": "{{name}} · Book {{volume}}",
+    "edit": "Edit",
+    "add": "+ Add to a series",
+    "formLabel": "Series",
+    "name": "Series name",
+    "volume": "Book #",
+    "save": "Save",
+    "remove": "Not in a series",
+    "authorAndCount_one": "{{author}} · {{count}} book",
+    "authorAndCount_other": "{{author}} · {{count}} books",
+    "count_one": "{{count}} book",
+    "count_other": "{{count}} books",
+    "progress": "{{read}} read · {{reading}} reading",
+    "toGo": "{{count}} to go",
+    "loadingVolumes": "Looking for the other books of the series…",
+    "reading": "reading",
+    "addShort": "+ Add",
+    "addVolume": "Add {{title}} to Want to read",
+    "addAll_one": "Add the missing book to Want to read",
+    "addAll_other": "Add the {{count}} missing books to Want to read",
+    "adding": "Adding…",
+    "states": {
+      "read": "Read",
+      "reading": "Currently reading",
+      "unread": "Not read yet",
+      "notInLibrary": "Not in your library"
+    },
+    "errors": {
+      "nameTooLong": "Use at most {{max}} characters.",
+      "invalidVolume": "Use a number from 0 to 1000, like 3 or 2.5."
+    }
   },
   "cover": {
     "add": "Change cover (only you)",

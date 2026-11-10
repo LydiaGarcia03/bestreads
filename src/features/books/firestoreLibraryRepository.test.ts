@@ -132,6 +132,23 @@ describe('createFirestoreLibraryRepository', () => {
     expect(batch.commit).toHaveBeenCalledOnce();
   });
 
+  describe('series', () => {
+    it('lists the books of a series and the series names in use', async () => {
+      const data = newLibraryBookData(createTestBook(), 'read', TEST_TODAY);
+      mocked.getDocs.mockResolvedValue({
+        docs: [snapshot('a', { ...data, series: { name: 'Dune', volume: 1 } }), snapshot('b', { ...data, series: null })],
+      } as never);
+      const repository = createFirestoreLibraryRepository(db);
+
+      const books = await repository.listSeriesBooks(UID, 'Dune');
+      expect(mocked.where).toHaveBeenLastCalledWith('series.name', '==', 'Dune');
+      expect(books[0]?.series).toEqual({ name: 'Dune', volume: 1 });
+
+      expect(await repository.listSeriesNames(UID)).toEqual(['Dune', '']);
+      expect(mocked.where).toHaveBeenLastCalledWith('series', '!=', null);
+    });
+  });
+
   describe('personal cover', () => {
     const dataUrl = 'data:image/webp;base64,QUJD';
 

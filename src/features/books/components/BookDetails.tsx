@@ -11,12 +11,20 @@ import { ProgressSection } from './ProgressSection';
 import { RatingEditor } from './RatingEditor';
 import { ReadingDates } from './ReadingDates';
 import { ReviewSection } from './ReviewSection';
+import { SeriesEditor } from './SeriesEditor';
+import { SeriesPanel } from './SeriesPanel';
 
 export interface BookDetailsProps {
   info: LibraryBookInfo;
   libraryBook: LibraryBook | null;
   catalogBook: CatalogBook | null;
 }
+
+const LAYOUT =
+  "grid grid-cols-[7rem_minmax(0,1fr)] gap-x-4 gap-y-5 [grid-template-areas:'cover_title''cover_status''description_description''progress_progress''rating_rating''dates_dates''review_review'] lg:grid-cols-[15rem_minmax(0,1fr)] lg:grid-rows-[auto_1fr] lg:gap-x-12 lg:gap-y-6 lg:[grid-template-areas:'aside_title''aside_main']";
+/** With a series: the series panel after the dates on phones, a third column on desktop (as in the mock). */
+const LAYOUT_WITH_SERIES =
+  "grid grid-cols-[7rem_minmax(0,1fr)] gap-x-4 gap-y-5 [grid-template-areas:'cover_title''cover_status''description_description''progress_progress''rating_rating''dates_dates''series_series''review_review'] lg:grid-cols-[15rem_minmax(0,1fr)_19rem] lg:grid-rows-[auto_1fr] lg:gap-x-10 lg:gap-y-6 lg:[grid-template-areas:'aside_title_series''aside_main_series']";
 
 /** Spacing between the sections that follow each other (mobile) or stack in the center column (desktop). */
 const SECTION = 'border-t border-border pt-5 lg:border-0 lg:pt-0';
@@ -35,9 +43,10 @@ export function BookDetails({ info, libraryBook, catalogBook }: BookDetailsProps
     info.publishedYear?.toString() ?? null,
   ].filter((fact): fact is string => fact !== null);
   const showsDates = libraryBook !== null && (libraryBook.status !== 'wantToRead' || libraryBook.reads.length > 0);
+  const showsSeries = libraryBook?.series != null;
 
   return (
-    <article className="grid grid-cols-[7rem_minmax(0,1fr)] gap-x-4 gap-y-5 [grid-template-areas:'cover_title''cover_status''description_description''progress_progress''rating_rating''dates_dates''review_review'] lg:grid-cols-[15rem_minmax(0,1fr)] lg:grid-rows-[auto_1fr] lg:gap-x-12 lg:gap-y-6 lg:[grid-template-areas:'aside_title''aside_main']">
+    <article className={showsSeries ? LAYOUT_WITH_SERIES : LAYOUT}>
       <header className="flex min-w-0 flex-col gap-1.5 [grid-area:title] lg:self-end">
         <h1 className="text-[22px] leading-tight font-bold lg:text-4xl">{info.title}</h1>
         {info.subtitle && <p className="text-sm text-fg-muted lg:text-base">{info.subtitle}</p>}
@@ -61,6 +70,7 @@ export function BookDetails({ info, libraryBook, catalogBook }: BookDetailsProps
         <div className="flex flex-col gap-3 [grid-area:status]">
           <LibraryStatus libraryBook={libraryBook} catalogBook={catalogBook} title={info.title} />
           {libraryBook && <BookShelves book={libraryBook} />}
+          {libraryBook && <SeriesEditor book={libraryBook} />}
         </div>
         {showsDates && (
           <div className={`${SECTION} [grid-area:dates]`}>
@@ -91,6 +101,13 @@ export function BookDetails({ info, libraryBook, catalogBook }: BookDetailsProps
           </div>
         )}
       </div>
+
+      {showsSeries && (
+        // Desktop: a full-height column that stays in view and scrolls on its own (long series).
+        <div className="border-t border-border pt-5 [grid-area:series] lg:sticky lg:top-6 lg:max-h-[calc(100dvh-3rem)] lg:self-start lg:overflow-y-auto lg:border-t-0 lg:border-l lg:pt-0 lg:pl-6">
+          <SeriesPanel book={libraryBook} />
+        </div>
+      )}
     </article>
   );
 }

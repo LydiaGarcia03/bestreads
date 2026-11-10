@@ -2,6 +2,7 @@
 import type { BookSource, CatalogBook } from '@/features/catalog';
 import { isValidRating } from './rating';
 import { readsAfterStatusChange } from './reads';
+import { seriesFromCatalog, type BookSeriesInfo } from './series';
 
 export const READING_STATUSES = ['wantToRead', 'reading', 'read'] as const;
 export type ReadingStatus = (typeof READING_STATUSES)[number];
@@ -57,6 +58,8 @@ export interface LibraryBookState {
   reads: ReadPeriod[];
   /** The owner uploaded a cover (kept in `private/cover`); lists load it only for these books. */
   hasPersonalCover: boolean;
+  /** Series and volume, filled from the catalog when added and editable; `null` when not in a series. */
+  series: BookSeriesInfo | null;
 }
 
 export interface LibraryBook extends LibraryBookInfo, LibraryBookState {
@@ -106,6 +109,7 @@ export function newLibraryBookData(book: CatalogBook, status: ReadingStatus, tod
     progress: null,
     reads: readsAfterStatusChange([], status, today),
     hasPersonalCover: false,
+    series: seriesFromCatalog(book.series),
   };
 }
 
@@ -138,6 +142,14 @@ function readReads(value: unknown): ReadPeriod[] {
     .map((item) => ({ startedOn: stringOrNull(item.startedOn), finishedOn: stringOrNull(item.finishedOn) }));
 }
 
+/** A stored series, or `null` when missing (older books) or malformed. */
+function readSeries(value: unknown): BookSeriesInfo | null {
+  if (typeof value !== 'object' || value === null) return null;
+  const { name, volume } = value as Record<string, unknown>;
+  if (typeof name !== 'string' || !name.trim()) return null;
+  return { name, volume: numberOrNull(volume) };
+}
+
 /** Builds a `LibraryBook` from stored fields (timestamps already converted to `Date`). */
 export function readLibraryBook(id: string, data: Readonly<Record<string, unknown>>): LibraryBook {
   return {
@@ -159,6 +171,7 @@ export function readLibraryBook(id: string, data: Readonly<Record<string, unknow
     reads: readReads(data.reads),
     // Books saved before personal covers existed have no such field.
     hasPersonalCover: data.hasPersonalCover === true,
+    series: readSeries(data.series),
     addedAt: data.addedAt instanceof Date ? data.addedAt : null,
     updatedAt: data.updatedAt instanceof Date ? data.updatedAt : null,
   };

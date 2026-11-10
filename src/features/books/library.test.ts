@@ -65,6 +65,12 @@ describe('newLibraryBookData', () => {
     ]);
     expect(newLibraryBookData(createTestBook(), 'wantToRead', TEST_TODAY).reads).toEqual([]);
   });
+
+  it('fills the series from the catalog', () => {
+    const dune = createTestBook({ series: { name: 'Dune', position: '1' } });
+    expect(newLibraryBookData(dune, 'read', TEST_TODAY).series).toEqual({ name: 'Dune', volume: 1 });
+    expect(newLibraryBookData(createTestBook(), 'read', TEST_TODAY).series).toBeNull();
+  });
 });
 
 describe('readLibraryBook', () => {
@@ -113,6 +119,7 @@ describe('readLibraryBook', () => {
       progress: null,
       reads: [],
       hasPersonalCover: false,
+      series: null,
       addedAt: null,
       updatedAt: null,
     });

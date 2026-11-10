@@ -5,7 +5,7 @@
 import type { LibraryBook, LibraryBookState, ReadingStatus, ReadPeriod } from './library';
 
 /** Fields the app changes on a library book outside the rating (which has its own atomic write). */
-export type LibraryBookPatch = Partial<Pick<LibraryBookState, 'status' | 'progress' | 'reads' | 'shelfIds'>>;
+export type LibraryBookPatch = Partial<Pick<LibraryBookState, 'status' | 'progress' | 'reads' | 'shelfIds' | 'series'>>;
 
 const pad = (value: number) => String(value).padStart(2, '0');
 
