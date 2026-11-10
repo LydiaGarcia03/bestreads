@@ -24,6 +24,8 @@ export default defineConfig(({ command }) => ({
     },
   },
   test: {
+    // Rules tests need the Firestore emulator: `npm run test:rules` (vitest.rules.config.ts).
+    include: ['src/**/*.test.{ts,tsx}'],
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],

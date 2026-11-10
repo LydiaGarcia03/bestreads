@@ -41,6 +41,22 @@ jobs:
       - name: Test
         run: npm test
 
+      # The Firestore emulator runs on Java; its download is cached between runs.
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Cache Firebase emulators
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/firebase/emulators
+          key: firebase-emulators-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Test security rules
+        run: npm run test:rules
+
       - name: Build
         run: npm run build
         env:
