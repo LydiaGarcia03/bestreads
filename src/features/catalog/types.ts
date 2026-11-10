@@ -1,5 +1,11 @@
 export type BookSource = 'googleBooks' | 'openLibrary';
 
+export interface BookSeries {
+  name: string;
+  /** Position as the API writes it: "1", "2.5", "1-7"; `null` when unknown. */
+  position: string | null;
+}
+
 /** A book as described by the public book APIs, independent of the API it came from. */
 export interface CatalogBook {
   /** Google Books volume id, or `ol-<work id>` for Open Library (see `CLAUDE.md`). */
@@ -18,6 +24,13 @@ export interface CatalogBook {
   categories: string[];
   /** How many people read or rated it, per the API (0 when unknown). Only used to rank search results. */
   popularity: number;
+  /** The series it belongs to, when the API knows it (Open Library), e.g. "Dune", position "1". */
+  series: BookSeries | null;
+  /**
+   * Subjects for search matching only (Open Library subjects, Google categories). Open Library often
+   * lacks the series of famous sequels but tags them, e.g. "Hunger Games (Fictitious place)".
+   */
+  subjects: string[];
   source: BookSource;
 }
 

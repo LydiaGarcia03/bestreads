@@ -1,5 +1,5 @@
 import { keepPreviousData, useInfiniteQuery } from '@tanstack/react-query';
-import { SEARCH_PAGE_SIZE, uniqueWorks, useCatalog } from '@/features/catalog';
+import { numberSeriesByRelease, SEARCH_PAGE_SIZE, uniqueWorks, useCatalog } from '@/features/catalog';
 import { normalizeQuery } from './searchQuery';
 
 /** Shorter queries return too much noise and waste API quota. */
@@ -30,8 +30,9 @@ export function useBookSearch(query: string) {
       catalog.search(normalized, { page: pageParam, pageSize: SEARCH_PAGE_SIZE }, signal),
     initialPageParam: FIRST_PAGE,
     getNextPageParam: (lastPage, pages) => (lastPage.hasMore ? pages.length : undefined),
-    // Each page is ranked on its own; a work already shown on an earlier page is not repeated.
-    select: (data) => uniqueWorks(data.pages.flatMap((page) => page.books)),
+    // Each page is ranked on its own; a work already shown on an earlier page is not repeated. Series
+    // without positions are numbered by release over everything loaded, so later pages fit in.
+    select: (data) => numberSeriesByRelease(uniqueWorks(data.pages.flatMap((page) => page.books))),
     enabled: isSearchableQuery(normalized),
     staleTime: SEARCH_STALE_TIME_MS,
     placeholderData: keepPreviousData,

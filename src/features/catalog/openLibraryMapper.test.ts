@@ -11,11 +11,11 @@ import {
 
 describe('openLibraryQuery', () => {
   it.each([
-    ['yester', 'yester*'],
-    ['Harry Pot', 'Harry pot*'],
-    ['pequeno Príncipe', 'pequeno principe*'],
-    ['to', 'to'],
-    ['title:"dune" (spice)', 'title dune spice*'],
+    ['yester', '(yester) OR (yester*) OR series_name:(yester*)'],
+    ['Harry Pot', '(Harry Pot) OR (Harry pot*) OR series_name:(Harry pot*)'],
+    ['pequeno Príncipe', '(pequeno Príncipe) OR (pequeno principe*) OR series_name:(pequeno principe*)'],
+    ['to', '(to) OR series_name:(to)'],
+    ['title:"dune" (spice)', '(title dune spice) OR (title dune spice*) OR series_name:(title dune spice*)'],
     ['978-0-441-01359-3', 'isbn:9780441013593'],
     ['  ?! ', ''],
   ])('%j → %j', (query, expected) => {
@@ -79,6 +79,27 @@ describe('Open Library cover URLs', () => {
   });
 });
 
+describe('mapOpenLibraryDoc series', () => {
+  it('falls back to a series tag among the subjects', () => {
+    const book = mapOpenLibraryDoc({
+      key: '/works/OL2W',
+      title: 'Catching Fire',
+      subject: ['Fiction', 'Survival', 'Serie:The_Hunger_Games'],
+    });
+    expect(book?.series).toEqual({ name: 'The Hunger Games', position: null });
+    expect(book?.subjects).toContain('Serie:The_Hunger_Games');
+  });
+
+  it('reads the first series and its position', () => {
+    const book = mapOpenLibraryDoc({ key: '/works/OL1W', title: 'Dune', series_name: ['Dune'], series_position: ['1'] });
+    expect(book?.series).toEqual({ name: 'Dune', position: '1' });
+    expect(mapOpenLibraryDoc({ key: '/works/OL1W', title: 'X', series_name: ['Saga'] })?.series).toEqual({
+      name: 'Saga',
+      position: null,
+    });
+  });
+});
+
 describe('mapOpenLibraryDoc', () => {
   it('maps every field with an ol- prefixed id', () => {
     expect(mapOpenLibraryDoc(DOC)).toEqual({
@@ -94,6 +115,8 @@ describe('mapOpenLibraryDoc', () => {
       publishedDate: '2021',
       categories: ['Science fiction', 'Space', 'Astronauts'],
       popularity: 0,
+      series: null,
+      subjects: ['Science fiction', 'Space', 'Astronauts', 'Survival'],
       source: 'openLibrary',
     });
   });

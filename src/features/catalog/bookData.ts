@@ -11,10 +11,16 @@ export function asRecord(value: unknown): Record<string, unknown> {
   return typeof value === 'object' && value !== null ? (value as Record<string, unknown>) : {};
 }
 
+/** U+FFFD, left by APIs where a character was lost in a bad encoding conversion. */
+const REPLACEMENT_CHARACTER = String.fromCharCode(0xfffd);
+/** Control and private-use characters, except whitespace (descriptions keep their line breaks). */
+const INVISIBLE_JUNK = /(?!\s)[\p{Cc}\p{Co}]/gu;
+
+/** Trimmed text without characters that render as empty boxes; `null` when nothing is left. */
 export function nonEmptyString(value: unknown): string | null {
   if (typeof value !== 'string') return null;
-  const trimmed = value.trim();
-  return trimmed === '' ? null : trimmed;
+  const cleaned = value.split(REPLACEMENT_CHARACTER).join('').replace(INVISIBLE_JUNK, '').trim();
+  return cleaned === '' ? null : cleaned;
 }
 
 export function positiveInteger(value: unknown): number | null {

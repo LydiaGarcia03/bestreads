@@ -56,6 +56,9 @@ export function mapGoogleVolume(volume: unknown): CatalogBook | null {
     publishedDate: normalizePublishedDate(info.publishedDate),
     categories: topCategories(stringList(info.categories)),
     popularity: positiveInteger(info.ratingsCount) ?? 0,
+    // Google only gives an opaque series id, not its name.
+    series: null,
+    subjects: stringList(info.categories),
     source: 'googleBooks',
   };
 }

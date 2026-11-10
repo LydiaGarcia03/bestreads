@@ -2,6 +2,7 @@ import type { MouseEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BookCover } from '@/features/books';
 import type { CatalogBook } from '@/features/catalog';
+import { SeriesLabel } from './SeriesLabel';
 
 export interface SearchSuggestionsProps {
   id: string;
@@ -78,7 +79,10 @@ export function SearchSuggestions({
           >
             <BookCover src={book.coverUrl} title={book.title} className="w-10 shrink-0" />
             <div className="flex min-w-0 flex-col gap-0.5">
-              <span className="line-clamp-2 text-sm font-bold text-fg">{book.title}</span>
+              <span className="line-clamp-2 text-sm font-bold text-fg">
+                {book.title}
+                <SeriesLabel series={book.series} />
+              </span>
               {book.authors.length > 0 && (
                 <span className="line-clamp-1 text-sm text-fg-muted">
                   {t('books.by', { authors: book.authors.join(', ') })}

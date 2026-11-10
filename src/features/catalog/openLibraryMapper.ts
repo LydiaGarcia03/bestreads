@@ -11,13 +11,13 @@ import {
   topCategories,
   yearFromDate,
 } from './bookData';
-import type { CatalogBook } from './types';
+import type { BookSeries, CatalogBook } from './types';
 
 export const OPEN_LIBRARY_COVERS_URL = 'https://covers.openlibrary.org/b';
 
 /** Fields requested from the search API (keeps responses small). */
 export const OPEN_LIBRARY_FIELDS =
-  'key,title,subtitle,author_name,cover_i,number_of_pages_median,isbn,first_publish_year,subject,readinglog_count,ratings_count';
+  'key,title,subtitle,author_name,cover_i,number_of_pages_median,isbn,first_publish_year,subject,readinglog_count,ratings_count,series_name,series_position';
 
 /** Typed words this short are too common to search as a prefix ("a*" matches almost everything). */
 const MIN_PREFIX_LENGTH = 3;
@@ -40,7 +40,12 @@ export function openLibraryQuery(query: string): string {
     .normalize('NFD')
     .replace(/\p{Diacritic}/gu, '')
     .toLowerCase();
-  return [...words, prefix.length >= MIN_PREFIX_LENGTH ? `${prefix}*` : last].join(' ');
+  const exact = [...words, last].join(' ');
+  if (prefix.length < MIN_PREFIX_LENGTH) return `(${exact}) OR series_name:(${exact})`;
+  // The exact words OR the prefix (a prefix alone ranks loose matches first: "circe*" misses "Circe"),
+  // OR the series name, so "dune" also brings the rest of the Dune series.
+  const withPrefix = [...words, `${prefix}*`].join(' ');
+  return `(${exact}) OR (${withPrefix}) OR series_name:(${withPrefix})`;
 }
 
 const WORK_KEY_PATTERN = /^\/works\/(OL\d+W)$/;
@@ -63,6 +68,25 @@ function pickIsbn(isbns: unknown): string | null {
   return valid.find((isbn) => isbn.length === 13) ?? valid[0] ?? null;
 }
 
+/**
+ * Subjects kept for matching. Popular works have a hundred or so, and the useful ones can be last
+ * ("Serie:The_Hunger_Games" is the 80th of "Catching Fire"'s 81), so the cap only guards against outliers.
+ */
+const MAX_SUBJECTS = 300;
+/** Series tags some works carry as subjects: "Serie:The_Hunger_Games", "series:Harry_Potter". */
+const SERIES_SUBJECT = /^series?:(.+)$/i;
+
+/**
+ * The work's series: the first of `series_name` (with `series_position`, parallel arrays), or else a
+ * series tag among the subjects (no position). `null` when neither exists.
+ */
+function seriesFrom(names: unknown, positions: unknown, subjects: readonly string[]): BookSeries | null {
+  const name = stringList(names)[0];
+  if (name) return { name, position: stringList(positions)[0] ?? null };
+  const tagged = subjects.map((subject) => subject.match(SERIES_SUBJECT)?.[1]).find(Boolean);
+  return tagged ? { name: tagged.replace(/_/g, ' ').trim(), position: null } : null;
+}
+
 /** Maps one search doc; returns `null` for entries that are not works or have no title. */
 export function mapOpenLibraryDoc(doc: unknown): CatalogBook | null {
   const data = record(doc);
@@ -71,6 +95,7 @@ export function mapOpenLibraryDoc(doc: unknown): CatalogBook | null {
   if (!workId || !title) return null;
 
   const coverId = positiveInteger(data.cover_i);
+  const subjects = stringList(data.subject).slice(0, MAX_SUBJECTS);
   return {
     id: `${OPEN_LIBRARY_ID_PREFIX}${workId}`,
     title,
@@ -85,6 +110,8 @@ export function mapOpenLibraryDoc(doc: unknown): CatalogBook | null {
     publishedDate: normalizePublishedDate(data.first_publish_year),
     categories: topCategories(stringList(data.subject)),
     popularity: (positiveInteger(data.readinglog_count) ?? 0) + (positiveInteger(data.ratings_count) ?? 0),
+    series: seriesFrom(data.series_name, data.series_position, subjects),
+    subjects,
     source: 'openLibrary',
   };
 }

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { BookCover, buildBookPath } from '@/features/books';
 import type { CatalogBook } from '@/features/catalog';
 import { formatPublishedDate } from '../publishedDate';
+import { SeriesLabel } from './SeriesLabel';
 import type { SearchView } from '../searchView';
 
 /** List: one row per book with details. Grid: covers with title and author. */
@@ -34,7 +35,10 @@ function ListItem({ book }: { book: CatalogBook }) {
     <Link to={buildBookPath(book.id)} className="group flex gap-4 py-4 text-fg hover:text-fg">
       <BookCover src={book.coverUrl} title={book.title} className="w-16 shrink-0 lg:w-20" />
       <div className="flex min-w-0 flex-col gap-1">
-        <h2 className="line-clamp-2 text-base font-bold group-hover:text-accent">{book.title}</h2>
+        <h2 className="line-clamp-2 text-base font-bold group-hover:text-accent">
+          {book.title}
+          <SeriesLabel series={book.series} />
+        </h2>
         {book.subtitle && <p className="line-clamp-1 text-sm text-fg-muted">{book.subtitle}</p>}
         {book.authors.length > 0 && (
           <p className="line-clamp-1 text-sm">{t('books.by', { authors: book.authors.join(', ') })}</p>
@@ -59,7 +63,10 @@ function GridItem({ book }: { book: CatalogBook }) {
     <Link to={buildBookPath(book.id)} className="group flex flex-col gap-2 text-fg hover:text-fg">
       <BookCover src={book.coverUrl} title={book.title} className="w-full" />
       <div className="flex min-w-0 flex-col gap-0.5">
-        <h2 className="line-clamp-2 text-sm font-bold group-hover:text-accent">{book.title}</h2>
+        <h2 className="line-clamp-2 text-sm font-bold group-hover:text-accent">
+          {book.title}
+          <SeriesLabel series={book.series} />
+        </h2>
         {book.authors.length > 0 && <p className="line-clamp-1 text-xs text-fg-muted">{book.authors.join(', ')}</p>}
       </div>
     </Link>

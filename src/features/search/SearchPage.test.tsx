@@ -82,6 +82,18 @@ describe('SearchPage', () => {
     expect(await screen.findByRole('heading', { name: 'Book screen' })).toBeInTheDocument();
   });
 
+  it('names the series after the title', async () => {
+    renderSearch('/search?q=dune', {
+      catalog: new FakeCatalog([
+        createTestBook({ id: 'ol-OL1W', title: 'Dune', authors: ['Frank Herbert'], series: { name: 'Dune', position: '1' } }),
+        createTestBook({ id: 'ol-OL9W', title: 'Saga Book', series: { name: 'Saga', position: null } }),
+      ]),
+    });
+
+    expect(await screen.findByRole('heading', { name: 'Dune (Dune, #1)' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Saga Book (Saga)' })).toBeInTheDocument();
+  });
+
   it('switches to a cover grid and remembers the choice', async () => {
     const user = userEvent.setup();
     renderSearch('/search?q=dune', { catalog: new FakeCatalog([createTestBook()]) });

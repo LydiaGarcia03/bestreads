@@ -24,6 +24,13 @@ describe('bookData helpers', () => {
     expect(nonEmptyString(3)).toBeNull();
   });
 
+  it('nonEmptyString drops characters that render as empty boxes, keeping line breaks', () => {
+    const junk = String.fromCharCode(0xfffd) + String.fromCharCode(0x1b) + String.fromCharCode(0xe000);
+    expect(nonEmptyString(`${junk}Os ${junk}bons velhos tempos`)).toBe('Os bons velhos tempos');
+    expect(nonEmptyString('Line one\nline two')).toBe('Line one\nline two');
+    expect(nonEmptyString(junk)).toBeNull();
+  });
+
   it('positiveInteger accepts only whole numbers above zero', () => {
     expect(positiveInteger(320)).toBe(320);
     expect(positiveInteger(0)).toBeNull();

@@ -37,6 +37,8 @@ describe('mapGoogleVolume', () => {
       publishedDate: '2021-05-04',
       categories: ['Fiction', 'Science Fiction'],
       popularity: 87,
+      series: null,
+      subjects: ['Fiction / Science Fiction / General'],
       source: 'googleBooks',
     });
   });
@@ -68,6 +70,8 @@ describe('mapGoogleVolume', () => {
       publishedDate: null,
       categories: [],
       popularity: 0,
+      series: null,
+      subjects: [],
       source: 'googleBooks',
     });
   });

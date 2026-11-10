@@ -5,11 +5,10 @@ import {
   createMergedProvider,
   createOpenLibraryProvider,
   SEARCH_PAGE_SIZE,
-  MIN_GOOD_MATCHES,
   SEARCH_MAX_WAIT_MS,
   SEARCH_TIME_BUDGET_MS,
 } from './providers';
-import { CatalogError, type CatalogSearchOptions } from './types';
+import { CatalogError, type CatalogBook, type CatalogSearchOptions } from './types';
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
@@ -93,9 +92,11 @@ describe('createOpenLibraryProvider', () => {
 
     const url = requestedUrl(fetchFn);
     expect(url.origin + url.pathname).toBe('https://openlibrary.org/search.json');
-    expect(url.searchParams.get('q')).toBe('dune*');
+    expect(url.searchParams.get('q')).toBe('(Dune) OR (dune*) OR series_name:(dune*)');
+    expect(url.searchParams.get('fields')).toContain('series_name');
     expect(url.searchParams.get('page')).toBe('2');
-    expect(url.searchParams.get('limit')).toBe('12');
+    // Three candidates per result shown, for ranking to choose from.
+    expect(url.searchParams.get('limit')).toBe('36');
     expect(url.searchParams.get('fields')).toContain('readinglog_count');
     expect(result.hasMore).toBe(false);
     expect(result.books).toMatchObject([{ id: 'ol-OL1W', popularity: 1000 }]);
@@ -127,7 +128,7 @@ describe('createMergedProvider', () => {
     expect(result.books.map((book) => book.id)).toEqual(['ol-OL2W', 'g-yester']);
   });
 
-  it('merges copies of the same work, keeping the first provider’s copy', async () => {
+  it('merges copies of the same work, led by the more read copy', async () => {
     const result = await createMergedProvider([
       google([createTestBook({ id: 'g1', title: 'Dune', authors: ['Frank Herbert'], coverUrl: null })]),
       openLibrary([
@@ -136,7 +137,7 @@ describe('createMergedProvider', () => {
     ]).search('dune', FIRST_PAGE);
 
     expect(result.books).toHaveLength(1);
-    expect(result.books[0]).toMatchObject({ id: 'g1', coverUrl: 'ol.jpg', popularity: 900 });
+    expect(result.books[0]).toMatchObject({ id: 'ol-OL1W', coverUrl: 'ol.jpg', popularity: 900 });
   });
 
   it('reports more pages when any provider has more', async () => {
@@ -190,28 +191,58 @@ describe('createMergedProvider', () => {
       return { before, after: isDone };
     };
 
-    it('stops waiting for a slow provider at the time budget when the answers are good enough', async () => {
-      const goodMatches = Array.from({ length: MIN_GOOD_MATCHES }, (_, index) =>
-        createTestBook({ id: `g${index}`, title: `Yesterday ${index}` }),
+    /** A provider answering `books` after `ms` (fake timers). */
+    const answeringAfter = (ms: number, books: CatalogBook[]) => {
+      const catalog = new FakeCatalog(books);
+      catalog.search.mockImplementationOnce(
+        () => new Promise((resolve) => setTimeout(() => resolve({ books, hasMore: false }), ms)),
       );
-      const { slow, signals } = hangingProvider();
-      const search = createMergedProvider([google(goodMatches), slow]).search('yester', FIRST_PAGE);
+      return catalog;
+    };
+    const bonsTempos = createTestBook({ id: 'g-bt', title: 'Bons tempos', authors: ['Caro Claire Burke'] });
 
-      expect(await finishedBy(search, SEARCH_TIME_BUDGET_MS)).toEqual({ before: false, after: true });
-      expect((await search).books).toHaveLength(MIN_GOOD_MATCHES);
-      expect(signals[0]?.aborted).toBe(true);
+    it('always waits for a slow primary, so its books are never lost', async () => {
+      // The bug: Google (primary) answered after the budget and its only Portuguese edition was dropped.
+      const search = createMergedProvider([answeringAfter(SEARCH_TIME_BUDGET_MS + 500, [bonsTempos]), openLibrary()]).search(
+        'bons tempos',
+        FIRST_PAGE,
+      );
+
+      expect(await finishedBy(search, SEARCH_TIME_BUDGET_MS + 500)).toEqual({ before: false, after: true });
+      expect((await search).books.map((book) => book.id)).toContain('g-bt');
     });
 
-    it('waits longer for a slow provider when the answers so far match poorly', async () => {
+    it('drops a supplement still running at the time budget once the primary answered', async () => {
       const { slow, signals } = hangingProvider();
       const search = createMergedProvider([google(), slow]).search('yester', FIRST_PAGE);
 
-      expect(await finishedBy(search, SEARCH_MAX_WAIT_MS)).toEqual({ before: false, after: true });
+      expect(await finishedBy(search, SEARCH_TIME_BUDGET_MS)).toEqual({ before: false, after: true });
       expect((await search).books.map((book) => book.id)).toEqual(['g-yester']);
       expect(signals[0]?.aborted).toBe(true);
     });
-  });
 
+    it('waits for the supplements up to the maximum when the primary fails', async () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      const failing = google();
+      failing.search.mockRejectedValueOnce(new CatalogError('HTTP 429'));
+      const late = answeringAfter(SEARCH_MAX_WAIT_MS - 500, [createTestBook({ id: 'ol-1', title: 'Yesterday' })]);
+
+      const search = createMergedProvider([failing, late]).search('yester', FIRST_PAGE);
+
+      expect(await finishedBy(search, SEARCH_MAX_WAIT_MS - 500)).toEqual({ before: false, after: true });
+      expect((await search).books.map((book) => book.id)).toEqual(['ol-1']);
+      warn.mockRestore();
+    });
+
+    it('gives up on a primary slower than the maximum wait and shows the others', async () => {
+      const hangingPrimary = google();
+      hangingPrimary.search.mockImplementationOnce(() => new Promise(() => {}));
+      const search = createMergedProvider([hangingPrimary, openLibrary()]).search('yester', FIRST_PAGE);
+
+      expect(await finishedBy(search, SEARCH_MAX_WAIT_MS)).toEqual({ before: false, after: true });
+      expect((await search).books.map((book) => book.id)).toEqual(['ol-OL2W']);
+    });
+  });
   it('aborts every search when the caller aborts', async () => {
     const controller = new AbortController();
     const signals: AbortSignal[] = [];

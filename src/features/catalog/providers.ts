@@ -1,4 +1,4 @@
-import { matchTier, mergeResultLists, rankResults } from './catalogRanking';
+import { mergeResultLists, rankResults } from './catalogRanking';
 import { fillMissingCovers, uniqueById } from './catalogResults';
 import { defaultFetch, fetchJson, fetchJsonOrNull, type FetchFn } from './fetchJson';
 import {
@@ -22,16 +22,15 @@ import type { CatalogBook, CatalogProvider, CatalogSearchResult } from './types'
 
 /** Small pages answer faster; more are loaded on demand. */
 export const SEARCH_PAGE_SIZE = 12;
+/** Open Library documents requested per result shown, so ranking has enough to choose from. */
+const OPEN_LIBRARY_CANDIDATES_PER_RESULT = 3;
 /**
- * Once the answers so far hold enough good matches (`MIN_GOOD_MATCHES`), the other APIs may answer
- * until this long after the search started; later results are dropped. Measured: Open Library
- * ~0.25–0.5 s, Google ~0.5–1.5 s (Google has the Portuguese and new books, so it gets its usual time).
+ * Supplementary APIs (Open Library) still running this long after the search started are dropped,
+ * once the primary (Google) has answered. Measured: Open Library ~0.25–0.5 s, Google ~0.5–1.6 s.
  */
 export const SEARCH_TIME_BUDGET_MS = 1500;
-/** Without enough good matches yet, the other APIs are worth waiting for, up to this long. */
+/** The longest any API is waited for, the primary included (then the others' results are shown). */
 export const SEARCH_MAX_WAIT_MS = 4000;
-/** Good matches (see `matchTier`) that make the answers so far worth showing without the slower APIs. */
-export const MIN_GOOD_MATCHES = 3;
 
 const GOOGLE_BOOKS_URL = 'https://www.googleapis.com/books/v1/volumes';
 const OPEN_LIBRARY_URL = 'https://openlibrary.org';
@@ -93,8 +92,11 @@ export function createOpenLibraryProvider({ fetchFn = defaultFetch }: { fetchFn?
     async search(query, { page, pageSize }, signal) {
       const prefixQuery = openLibraryQuery(query);
       if (!prefixQuery) return NO_RESULTS;
-      const response = await searchDocs(prefixQuery, page, pageSize, signal);
-      return { books: mapOpenLibraryResponse(response), hasMore: openLibraryDocCount(response) === pageSize };
+      // More candidates than shown: Open Library's own order is loose, and a series' other books
+      // ("Catching Fire" for "hunger games") are often just past the first dozen.
+      const limit = pageSize * OPEN_LIBRARY_CANDIDATES_PER_RESULT;
+      const response = await searchDocs(prefixQuery, page, limit, signal);
+      return { books: mapOpenLibraryResponse(response), hasMore: openLibraryDocCount(response) === limit };
     },
 
     async getBook(bookId, signal) {
@@ -132,24 +134,28 @@ export async function fetchOpenLibraryDescriptionByIsbn(
 type Outcome = { ok: true; result: CatalogSearchResult } | { ok: false; error: unknown };
 
 interface Deadlines {
-  /** Applies once the results so far are `isEnough`. */
+  /** Supplements still running this long after the start are dropped (if the primary answered). */
   budgetMs: number;
-  /** Applies otherwise. */
+  /** The longest any search is waited for. */
   maxWaitMs: number;
-  isEnough: (results: CatalogSearchResult[]) => boolean;
 }
 
 const successes = (outcomes: readonly (Outcome | undefined)[]) =>
   outcomes.flatMap((outcome) => (outcome?.ok ? [outcome.result] : []));
 
+/** Resolves after `ms`, or at once when the deadline has already passed. */
+const delay = (ms: number, onTimer: (timer: ReturnType<typeof setTimeout>) => void) =>
+  ms <= 0 ? Promise.resolve() : new Promise<void>((resolve) => onTimer(setTimeout(resolve, ms)));
+
 /**
- * Runs every search at once. Resolves when all have settled or, once one has succeeded, at a deadline
- * counted from the start (see `Deadlines`); searches still running then are aborted and left out (`undefined`).
+ * Runs every search at once. Always waits for the primary (`providers[0]`, up to `maxWaitMs`); the
+ * supplements then get until `budgetMs` after the start (or `maxWaitMs` when the primary failed, since
+ * they're all that's left). Searches still running at the end are aborted and left out (`undefined`).
  */
 async function searchAll(
   providers: readonly CatalogProvider[],
   run: (provider: CatalogProvider, signal: AbortSignal) => Promise<CatalogSearchResult>,
-  { budgetMs, maxWaitMs, isEnough }: Deadlines,
+  { budgetMs, maxWaitMs }: Deadlines,
   signal?: AbortSignal,
 ): Promise<(Outcome | undefined)[]> {
   const startedAt = Date.now();
@@ -158,30 +164,25 @@ async function searchAll(
   signal?.addEventListener('abort', abortAll, { once: true });
 
   const outcomes: (Outcome | undefined)[] = providers.map(() => undefined);
-  let onFirstSuccess = () => {};
-  const firstSuccess = new Promise<void>((resolve) => (onFirstSuccess = resolve));
-  const settled = Promise.all(
-    providers.map((provider, index) =>
-      run(provider, (controllers[index] as AbortController).signal).then(
-        (result) => {
-          outcomes[index] = { ok: true, result };
-          onFirstSuccess();
-        },
-        (error: unknown) => {
-          outcomes[index] = { ok: false, error };
-        },
-      ),
+  const searches = providers.map((provider, index) =>
+    run(provider, (controllers[index] as AbortController).signal).then(
+      (result) => {
+        outcomes[index] = { ok: true, result };
+      },
+      (error: unknown) => {
+        outcomes[index] = { ok: false, error };
+      },
     ),
   );
+  const timers: ReturnType<typeof setTimeout>[] = [];
+  const until = (deadlineMs: number) => delay(startedAt + deadlineMs - Date.now(), (timer) => timers.push(timer));
 
-  let timer: ReturnType<typeof setTimeout> | undefined;
   try {
-    await Promise.race([settled, firstSuccess]);
-    const deadlineMs = isEnough(successes(outcomes)) ? budgetMs : maxWaitMs;
-    const remainingMs = Math.max(0, startedAt + deadlineMs - Date.now());
-    await Promise.race([settled, new Promise((resolve) => (timer = setTimeout(resolve, remainingMs)))]);
+    await Promise.race([searches[0], until(maxWaitMs)]);
+    const deadlineMs = outcomes[0]?.ok ? budgetMs : maxWaitMs;
+    await Promise.race([Promise.all(searches), until(deadlineMs)]);
   } finally {
-    clearTimeout(timer);
+    timers.forEach(clearTimeout);
     signal?.removeEventListener('abort', abortAll);
   }
   outcomes.forEach((outcome, index) => {
@@ -191,22 +192,21 @@ async function searchAll(
 }
 
 /**
- * Searches every provider at once and returns one list: copies of the same work merged,
- * then ranked by match quality and popularity (`rankResults`). Fails only when every provider fails.
+ * Searches every provider at once and returns one list: copies of the same work merged, then ranked
+ * by match quality and popularity (`rankResults`). Fails only when every provider fails.
+ * The first provider is the primary one, always waited for: its books are never dropped for being slow
+ * (Google has the Portuguese and new books that Open Library lacks). The others supplement it when
+ * they answer in time (Open Library: series, reader counts, half-typed words; usually the faster one).
  * Looks books up in the first provider that knows the id (each returns `null` for the others' ids).
- * Put the provider with the richest data first: it wins when the same work comes from several.
  */
 export function createMergedProvider(
   providers: readonly CatalogProvider[],
-  { budgetMs = SEARCH_TIME_BUDGET_MS, maxWaitMs = SEARCH_MAX_WAIT_MS }: Partial<Omit<Deadlines, 'isEnough'>> = {},
+  { budgetMs = SEARCH_TIME_BUDGET_MS, maxWaitMs = SEARCH_MAX_WAIT_MS }: Partial<Deadlines> = {},
 ): CatalogProvider {
   return {
     async search(query, options, signal) {
       const run = (provider: CatalogProvider, child: AbortSignal) => provider.search(query, options, child);
-      const isEnough = (results: CatalogSearchResult[]) =>
-        results.flatMap((result) => result.books).filter((book) => matchTier(book, query) > 0).length >=
-        MIN_GOOD_MATCHES;
-      const outcomes = await searchAll(providers, run, { budgetMs, maxWaitMs, isEnough }, signal);
+      const outcomes = await searchAll(providers, run, { budgetMs, maxWaitMs }, signal);
       signal?.throwIfAborted();
 
       const results = successes(outcomes);
@@ -220,7 +220,6 @@ export function createMergedProvider(
         hasMore: results.some((result) => result.hasMore),
       };
     },
-
     async getBook(bookId, signal) {
       for (const provider of providers) {
         const book = await provider.getBook(bookId, signal);
