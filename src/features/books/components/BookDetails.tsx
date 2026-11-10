@@ -14,6 +14,7 @@ import { ReadingDates } from './ReadingDates';
 import { ReviewSection } from './ReviewSection';
 import { SeriesEditor } from './SeriesEditor';
 import { SeriesPanel } from './SeriesPanel';
+import { ShareBook } from './ShareBook';
 
 export interface BookDetailsProps {
   info: LibraryBookInfo;
@@ -72,6 +73,7 @@ export function BookDetails({ info, libraryBook, catalogBook }: BookDetailsProps
           <LibraryStatus libraryBook={libraryBook} catalogBook={catalogBook} title={info.title} />
           {libraryBook && <BookShelves book={libraryBook} />}
           {libraryBook && <SeriesEditor book={libraryBook} />}
+          {libraryBook && <ShareBook book={libraryBook} />}
         </div>
         {showsDates && (
           <div className={`${SECTION} [grid-area:dates]`}>

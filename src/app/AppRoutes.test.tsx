@@ -25,11 +25,11 @@ describe('AppRoutes', () => {
   it.each([
     ['/shelves', 'Shelves'],
     ['/friends', 'Friends'],
-    ['/year', 'My Year'],
+    ['/year', /^My Year \d{4}$/],
     ['/settings', 'Settings'],
     ['/book/abc123', 'Book not found'],
     ['/search', 'Search'],
-  ])('renders %s', async (route, title) => {
+  ])('renders %s', async (route, title: string | RegExp) => {
     renderWithProviders(<AppRoutes />, { route });
     expect(await screen.findByRole('heading', { level: 1, name: title })).toBeInTheDocument();
   });

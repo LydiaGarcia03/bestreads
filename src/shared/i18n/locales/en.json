@@ -445,5 +445,78 @@
       "en": "English",
       "pt-BR": "Português (Brasil)"
     }
+  },
+  "year": {
+    "heading": "My Year {{year}}",
+    "open": "Open",
+    "home": {
+      "books_zero": "books",
+      "books_one": "book",
+      "books_other": "books",
+      "pages_zero": "pages",
+      "pages_one": "page",
+      "pages_other": "pages",
+      "average": "avg rating"
+    },
+    "years": "Years",
+    "loadError": "Couldn't load your books.",
+    "empty": "You haven't finished any books in {{year}} yet. Mark a book as “Read” and it shows up here.",
+    "share": "Share my year",
+    "shareHeading": "Share your year",
+    "months": "Books per month",
+    "monthValue_zero": "{{month}}: no books",
+    "monthValue_one": "{{month}}: {{count}} book",
+    "monthValue_other": "{{month}}: {{count}} books",
+    "stats": {
+      "books_zero": "books finished",
+      "books_one": "book finished",
+      "books_other": "books finished",
+      "pages_zero": "pages read",
+      "pages_one": "page read",
+      "pages_other": "pages read",
+      "average": "average rating"
+    },
+    "highlights": {
+      "title": "Highlights",
+      "topRated": "Best rated",
+      "longest": "Longest book",
+      "topAuthor": "Most-read author",
+      "reads_one": "{{count}} book",
+      "reads_other": "{{count}} books"
+    },
+    "finished_one": "{{count}} book finished",
+    "finished_other": "{{count}} books finished",
+    "finishedOn": "Finished {{date}}"
+  },
+  "share": {
+    "share": "Share",
+    "download": "Download image",
+    "preparing": "Preparing…",
+    "close": "Close",
+    "error": "Couldn't create the image. Try again.",
+    "downloaded": "Image downloaded.",
+    "footer": "My reading journal on bestreads",
+    "book": {
+      "open": "Share",
+      "heading": "Share this book",
+      "finished": "Finished in {{date}}",
+      "status": {
+        "read": "Read",
+        "reading": "Currently reading",
+        "wantToRead": "On my want-to-read list"
+      }
+    },
+    "year": {
+      "title": "My {{year}} in books",
+      "books_zero": "books",
+      "books_one": "book",
+      "books_other": "books",
+      "pages_zero": "pages",
+      "pages_one": "page",
+      "pages_other": "pages",
+      "average": "avg rating",
+      "favorite": "Favorite",
+      "topAuthor": "Most read: {{author}}"
+    }
   }
 }

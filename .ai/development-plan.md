@@ -5,7 +5,7 @@ Each phase lists its tasks and a "Done when" checklist. Mark tasks with `[x]` as
 
 Status legend: `[ ]` not started · `[~]` in progress · `[x]` done
 
-Current phase: **Phase 6 — Social** (6.1 done; 6.2–6.4 built and rules published, waiting for a browser check with two accounts and the admin account; Phase 7 in progress; Phases 2–5 are done and checked at 390px in the dark theme; the light theme check is pending)
+Current phase: **Phase 7 — Share cards and My Year** (built, waiting for a browser check; Phase 6 built and rules published, waiting for a browser check with two accounts and the admin account; Phases 2–5 are done and checked at 390px in the dark theme; the light theme check is pending)
 
 ---
 
@@ -201,9 +201,16 @@ Decisions:
 
 ## Phase 7 — Share cards and My Year
 
-- [ ] Single-book share card (`html-to-image`)
-- [ ] Year-in-review (Wrapped-style) screen and card
-- [ ] Web Share API on mobile, PNG download on desktop
+- [x] Single-book share card (`html-to-image`, loaded only when sharing): catalog cover, title, author, rating, finish month or status; "Share" on the book page for library books
+- [x] Year-in-review (Wrapped-style) screen and card: `/year?year=YYYY` with year chips, books finished (re-reads count again), pages, average rating, books per month chart, highlights (best rated, longest book, most-read author), finished books grid; "Share my year" card
+- [x] Web Share API on mobile, PNG download on desktop (1080 × 1920 PNG)
+- [x] My Year card in the Home desktop side column (books, pages, average rating, link to My Year)
+- [ ] Checked in the browser at 390px and 1280px, both themes (cards follow the theme's banner colors); sharing tried on a phone
+
+Decisions:
+- Cards never use personal covers (private). Catalog covers are fetched as data URLs first; a host that blocks reading them from the browser (no CORS) gets a title placeholder in the preview and in the image alike.
+- My Year reads the "Read" and "Currently reading" shelves (300 books each, the shelf limit), since a re-read in progress can hold a read finished earlier.
+- The share feature imports no other feature: cards take plain data.
 
 ---
 

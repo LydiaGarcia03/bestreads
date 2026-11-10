@@ -13,6 +13,13 @@ Format:
 ---
 
 ## 2026-11-10
+- feat(year): My Year screen and share cards (Phase 7).
+  - build(deps): `html-to-image` ^1.11.13, imported dynamically in `src/features/share/shareApi.ts` only when a card is shared (own chunk, 12.5 KB).
+  - Domain: `src/features/year/yearReview.ts` (`finishedReadsIn`, `readingYears`, `buildYearReview`: finished reads with re-reads, pages, average rating of distinct rated books, reads per month, top 3 rated, longest book, most-read author with 2+ reads; `parseYear`); `src/features/share/shareMethod.ts` (`chooseShareMethod`: share sheet on phones that accept files, download otherwise; `shareFileName`; card 360 × 640 at pixel ratio 3); `cardStars.ts`.
+  - Data access: `shareApi.ts` (`renderPng`, `loadShareableImage` fetches a catalog cover as a data URL or `null` without CORS, `canShareFiles`, `shareFile` with cancel detection, `downloadFile`). Hooks: `useShareableImage`, `useShareCard`.
+  - UI: `ShareDialog` (scaled preview, "Share" / "Download image", status and error), `BookShareCard`, `YearShareCard` (theme banner colors, wordmark, stars, month bars); `ShareBook` on the book page (catalog cover only, never the personal cover); `YearPage` (`/year?year=`, year chips, stat tiles, `MonthChart` with every month announced and values on hover or focus, highlights, finished books grid, "Share my year", empty state); `ShareIcon`. i18n `year.*`, `share.*` (en, pt-BR, with `_zero` plurals).
+  - Home desktop side column gains `HomeYear` (this year's books, pages and average rating, "Open" link to My Year), sharing the Home shelf queries through `useYearReview`. `src/features/year/yearPath.ts` (`YEAR_PATH`, `YEAR_PARAM`) is used by `src/app/paths.ts`; `year/index.ts` and `year/lazy.ts` added.
+  - Tests: year review domain, share method, card stars, My Year screen (totals, chart, highlights, year switch, empty, download on desktop, share sheet on phones, error, pt-BR), book share card (catalog cover only, placeholder, status, download, pt-BR), Home year card; route test expects "My Year <year>". 638 tests pass. Initial JS: 136.2 KB gzip (+1.0 KB); My Year chunk 2.5 KB gzip.
 - docs(ai): `firestore.rules` with admin moderation published in the Firebase console.
 - feat(social): admin moderation of public data (Phase 6.4).
   - `firestore.rules`: admins (`isAdmin()`) may also delete `public/{uid}/ratings/{bookId}` and `follows/{followId}`; comments on `usernames` and `public/{uid}` deletion. Admins still can't read or write `users/{uid}/...`, edit public data or list profiles and usernames. Rules tests: admin deletes, nobody else can, no access to private data, a removed username stays blocked while the owner can claim a new one (34 tests).

@@ -220,6 +220,28 @@ describe('HomePage', () => {
       expect(within(friends).getByRole('link', { name: 'See all' })).toHaveAttribute('href', '/friends');
     });
 
+    it("shows this year's reading totals on desktop, linking to My Year", async () => {
+      stubScreen(true);
+      const thisYear = new Date().getFullYear();
+      renderHome([
+        createTestLibraryBook({
+          id: 'r1',
+          status: 'read',
+          rating: 4,
+          pageCount: 300,
+          reads: [{ startedOn: null, finishedOn: `${thisYear}-02-01` }],
+        }),
+      ]);
+
+      const side = screen.getByRole('complementary', { name: 'Friends and stats' });
+      const year = within(side).getByRole('region', { name: `My Year ${thisYear}` });
+      expect(await within(year).findByText('book')).toBeInTheDocument();
+      expect(within(year).getByText('book').nextElementSibling).toHaveTextContent('1');
+      expect(within(year).getByText('pages').nextElementSibling).toHaveTextContent('300');
+      expect(within(year).getByText('avg rating').nextElementSibling).toHaveTextContent('4');
+      expect(within(year).getByRole('link', { name: 'Open' })).toHaveAttribute('href', '/year');
+    });
+
     it('is not rendered (nor read) on phones', async () => {
       stubScreen(false);
       const social = new FakeSocialRepository();

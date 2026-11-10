@@ -445,5 +445,78 @@
       "en": "English",
       "pt-BR": "Português (Brasil)"
     }
+  },
+  "year": {
+    "heading": "Meu Ano {{year}}",
+    "open": "Abrir",
+    "home": {
+      "books_zero": "livros",
+      "books_one": "livro",
+      "books_other": "livros",
+      "pages_zero": "páginas",
+      "pages_one": "página",
+      "pages_other": "páginas",
+      "average": "nota média"
+    },
+    "years": "Anos",
+    "loadError": "Não foi possível carregar seus livros.",
+    "empty": "Você ainda não terminou nenhum livro em {{year}}. Marque um livro como “Lido” e ele aparece aqui.",
+    "share": "Compartilhar meu ano",
+    "shareHeading": "Compartilhe seu ano",
+    "months": "Livros por mês",
+    "monthValue_zero": "{{month}}: nenhum livro",
+    "monthValue_one": "{{month}}: {{count}} livro",
+    "monthValue_other": "{{month}}: {{count}} livros",
+    "stats": {
+      "books_zero": "livros terminados",
+      "books_one": "livro terminado",
+      "books_other": "livros terminados",
+      "pages_zero": "páginas lidas",
+      "pages_one": "página lida",
+      "pages_other": "páginas lidas",
+      "average": "nota média"
+    },
+    "highlights": {
+      "title": "Destaques",
+      "topRated": "Mais bem avaliados",
+      "longest": "Livro mais longo",
+      "topAuthor": "Autor mais lido",
+      "reads_one": "{{count}} livro",
+      "reads_other": "{{count}} livros"
+    },
+    "finished_one": "{{count}} livro terminado",
+    "finished_other": "{{count}} livros terminados",
+    "finishedOn": "Terminado em {{date}}"
+  },
+  "share": {
+    "share": "Compartilhar",
+    "download": "Baixar imagem",
+    "preparing": "Preparando…",
+    "close": "Fechar",
+    "error": "Não foi possível criar a imagem. Tente de novo.",
+    "downloaded": "Imagem baixada.",
+    "footer": "Meu diário de leitura no bestreads",
+    "book": {
+      "open": "Compartilhar",
+      "heading": "Compartilhar este livro",
+      "finished": "Terminado em {{date}}",
+      "status": {
+        "read": "Lido",
+        "reading": "Lendo agora",
+        "wantToRead": "Na minha lista de quero ler"
+      }
+    },
+    "year": {
+      "title": "Meu {{year}} em livros",
+      "books_zero": "livros",
+      "books_one": "livro",
+      "books_other": "livros",
+      "pages_zero": "páginas",
+      "pages_one": "página",
+      "pages_other": "páginas",
+      "average": "nota média",
+      "favorite": "Favorito",
+      "topAuthor": "Mais lido: {{author}}"
+    }
   }
 }

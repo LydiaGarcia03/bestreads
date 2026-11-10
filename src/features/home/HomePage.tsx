@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { useShelfCount } from '@/features/books/lazy';
+import { HomeYear } from '@/features/year/lazy';
 import { DESKTOP_QUERY, useMediaQuery } from '@/shared/hooks/useMediaQuery';
 import { CurrentlyReading } from './components/CurrentlyReading';
 import { HomeFriends } from './components/HomeFriends';
@@ -21,7 +22,7 @@ function useIsLibraryEmpty(): boolean | null {
 /**
  * Home: "Currently reading", "My shelves" and "Popular books". With an empty library the
  * popular books come first, as a starting point; otherwise they follow the shelves.
- * Desktop adds a side column with friends' latest ratings (My Year arrives with Phase 7).
+ * Desktop adds a side column with friends' latest ratings and this year's reading totals.
  */
 export function HomePage() {
   const { t } = useTranslation();
@@ -42,6 +43,7 @@ export function HomePage() {
       {isDesktop && (
         <aside aria-label={t('home.sideColumn')} className="flex w-72 shrink-0 flex-col gap-6">
           <HomeFriends />
+          <HomeYear />
         </aside>
       )}
     </div>
